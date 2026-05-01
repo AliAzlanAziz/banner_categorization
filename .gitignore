@@ -1,0 +1,5 @@
+*venv*
+*datadir*
+
+__pycache__
+.vscode

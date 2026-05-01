@@ -1,0 +1,9 @@
+selenium==4.16.0
+pandas==2.1.4
+numpy==1.26.4 
+opencv-python==4.8.1.78
+beautifulsoup4==4.12.2
+pycld3==0.22
+pyperclip==1.11.0
+pillow==10.1.0
+requests==2.32.5
