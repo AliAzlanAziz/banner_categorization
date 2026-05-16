@@ -7,9 +7,7 @@ from selenium.webdriver.common.by import By
 from .textMethods import *
 # from utilityMethods import get_win_inner_size
 
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
+from selenium.common.exceptions import StaleElementReferenceException
 
 
 
@@ -217,7 +215,7 @@ def is_inside_button(el: WebElement):
 
 def is_pos_int_zindex(el: WebElement):  # check if z-index is positive integer value
     z_index = str(el.value_of_css_property("z-index"))
-    if z_index.isdigit() and int(z_index) > 5:
+    if z_index.isdigit() and int(z_index) > 1:
         return True
     return False
 
@@ -235,30 +233,6 @@ def find_fixed_elements(els: list[WebElement]):
 
 def is_inside_ellipse(center: tuple, edges: tuple, point: tuple, tolerance: float):
     return (math.sqrt(point[0] - center[0])/math.sqrt(edges[0]*tolerance)) + (math.sqrt(point[1] - center[1])/math.sqrt(edges[1]*tolerance)) < 1
-
-
-def is_inside_area():
-    pass
-
-
-def find_major_ancestor(el: WebElement): # major ancestor is the common one with the most Inclusivity
-    temp_el = el
-    if is_fixed_element(temp_el):
-        while True:
-            temp_el = find_parent(temp_el)
-            if is_fixed_element(temp_el) or find_parent(temp_el).tag_name == "html":
-                return temp_el
-    else:
-        while True:
-            el_loc = temp_el.location.values()
-            el_size = temp_el.size.values()
-            parent = find_parent(temp_el)
-            par_loc = parent.location.values()
-            par_size = parent.size.values()
-            if is_inside_ellipse(par_loc, par_size, el_loc, 0.2) and is_inside_ellipse([sum(x) for x in zip(par_loc, par_size)], par_size, [sum(x) for x in zip(el_loc, el_size)], 0.2):
-                temp_el = parent
-            else: #todo
-                return parent
 
 
 def find_fixed_ancestors(els: list[WebElement]):

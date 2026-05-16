@@ -68,6 +68,11 @@ def to_xpath_text(string: str):
     return string
 
 
+def to_xpath_nested_text(string: str):
+    string = f".//*[{string}]"
+    return string
+
+
 def to_xpath_class(string: str):
     string = './/*[@class[' + string + ']]'
     return string
@@ -75,11 +80,6 @@ def to_xpath_class(string: str):
 
 def to_xpath_id(string: str):
     string = './/*[@id[' + string + ']]'
-    return string
-
-
-def to_xpathtest(string: str):
-    string = '//*[text()[' + string + ']]'
     return string
 
 

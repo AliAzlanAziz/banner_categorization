@@ -1,7 +1,6 @@
 import os
 
 from selenium.common.exceptions import TimeoutException, WebDriverException
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
@@ -10,6 +9,13 @@ from selenium.webdriver.common.keys import Keys
 import time
 from .elementMethods import *
 
+try:
+    from ..config import *
+except ImportError:
+    try:
+        from config import *
+    except ImportError:
+        raise ImportError("Failed to import config")
 
 '''
 this method finds the best possible element that covers all the banner-related content 
@@ -533,3 +539,41 @@ def dnsmpi_detection(html):
             if b:
                 dnsmpi = substr
     return dnsmpi
+
+
+def user_detected_as_bot(driver) -> bool:
+    score = 0
+
+    try:
+        html = driver.execute_script(
+            "return document.documentElement.outerHTML;"
+        ) or ""
+    except Exception:
+        return False
+
+    html_lower = html.lower()
+
+    for sig in ANTI_BOT_SIGNATURES_MANUALLY_IDENTIFIED:
+        if sig and sig.lower() in html_lower:
+            print("="*60)
+            print(sig.lower())
+            print(html_lower)
+            score += 3
+
+    # for sig in ANTI_BOT_SIGNATURES:
+    #     if sig and sig.lower() in html_lower:
+    #         print("="*60)
+    #         print(sig.lower())
+    #         print(html_lower)
+    #         score += 2
+
+    # for sig in BLOCK_INDICATORS:
+    #     if sig and sig.lower() in html_lower:
+    #         print("="*60)
+    #         print(sig.lower())
+    #         print(html_lower)
+    #         score += 3
+
+    print(f"score: {score}")
+
+    return score >= 3
