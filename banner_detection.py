@@ -18,6 +18,7 @@ from urllib.parse import urljoin, urlparse
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import (
     MoveTargetOutOfBoundsException,
@@ -88,8 +89,50 @@ def run_webdriver():
         
     if HEADLESS:
         options.add_argument("--headless")
-        
+
+    # Notifications
+    options.set_preference("dom.webnotifications.enabled", False)
+    options.set_preference("dom.push.enabled", False)
+
+    # Microphone / 🎥 Camera
+    options.set_preference("media.navigator.permission.disabled", True)
+    options.set_preference("permissions.default.microphone", 2)
+    options.set_preference("permissions.default.camera", 2)
+
+    # Location (Geolocation)
+    options.set_preference("geo.enabled", False)
+    options.set_preference("permissions.default.geo", 2)
+
+    # Screen sharing
+    options.set_preference("permissions.default.desktop-notification", 2)
+
+    # Persistent storage / IndexedDB prompts
+    options.set_preference("permissions.default.persistent-storage", 2)
+
+    # Autoplay (audio/video)
+    options.set_preference("media.autoplay.default", 5)
+
+    # Clipboard access
+    options.set_preference("dom.events.asyncClipboard.readText", False)
+    options.set_preference("dom.events.asyncClipboard.writeText", False)
+
+    # WebRTC (IP leak + device access)
+    options.set_preference("media.peerconnection.enabled", False)
+
+    # DRM / protected content
+    options.set_preference("media.eme.enabled", False)
+
+    # Disable password save prompts
+    options.set_preference("signon.rememberSignons", False)
+
+    # Disable popup blocking UI (optional)
+    options.set_preference("dom.disable_open_during_load", False)
+
+    # Deny all unknown permission requests by default
+    options.set_preference("permissions.default.image", 1)  # (1=allow, 2=block if needed)
+
     driver = webdriver.Firefox(options=options)
+
     driver.set_page_load_timeout(120)
     # driver.set_window_size(1854, 1048)
     driver.maximize_window()
@@ -142,31 +185,6 @@ def quit_current_driver_and_start_new_webdriver(data):
         return None
     
 
-def set_webdriver(web_driver=None):
-    global driver
-    try:
-        if web_driver is None:
-            web_driver = run_webdriver()
-        if driver != webdriver:
-            driver = web_driver
-            if MOBILE_AGENT:
-                driver.set_window_size(340, 695)
-            else:
-                driver.maximize_window()
-
-        # TODO: Added by ME for Cookie SRC Saver
-        # COOKIESRC_SAVE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'CookieSrcSaver/dist')
-        # driver.install_addon(path=COOKIESRC_SAVE_PATH, temporary=True)
-
-        if UBLOCK_ADDON:
-            install_ublock(driver)
-    except Exception as ex:
-        with open(log_file, 'a+') as f:
-            print(f"failed in bc.set_webdriver: f{traceback.format_exc()}", file=f)
-            MyExceptionLogger(err=ex, file=f)
-    return driver
-
-
 def get_webdriver_after_tab_restart():
     time.sleep(1)
     global driver
@@ -176,50 +194,6 @@ def get_webdriver_after_tab_restart():
         time.sleep(5)
 
     return driver
-    
-
-def install_ublock(web_driver):
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    ublock_xpi_path = current_dir + "/ublock/uBlock0@raymondhill.net.xpi"
-    web_driver.install_addon(ublock_xpi_path)
-
-
-def init(headless=HEADLESS, num_browsers=NUM_BROWSERS, num_repetitions=1, web_driver=None):  # initialize bannerdetection by setting url file and webdriver instance
-    global driver, file, UBLOCK_ADDON
-    
-    driver = web_driver
-    
-    create_data_dirs()
-    
-    file = Path("./bannerclick/input-files") / urls_file
-    file = file.resolve()
-    get_domains_set_global_domains(str(file))
-
-    init_str = f"""Crawl initialized for: {file} in {datetime.now().strftime("%H-%M-%S").__str__()}
-    START_POINT:STEP_SIZE: {START_POINT}:{STEP_SIZE}
-    headless: {headless}
-    input_file: {file}
-    num_browsers: {num_browsers}
-    num_repetitions: {num_repetitions}
-    translation: {TRANSLATION}
-    delay_time: {SLEEP_TIME}
-    ATTEMPTS: ATTEMPT_STEP_SLEEP_TIME: {ATTEMPTS}: {ATTEMPT_STEP_SLEEP_TIME}
-    Chrome: {CHROME}
-    Watchdog: {WATCHDOG}
-    interaction choice: {"ALL"}
-    non explicit: {NON_EXPLICIT}
-    SIMPLE_DETECTION: {SIMPLE_DETECTION}
-    search for reject btn in setting: {REJ_IN_SET}
-    NC_ADDON: {NC_ADDON}
-    mobile agent: {MOBILE_AGENT}
-    banner interaction: {BANNERINTERACTION} \n\n""" + "__"*30 + "\n"
-    print(init_str)
-
-    try:
-        with open(log_file, 'a+') as f:
-            print(init_str, file=f)
-    except:
-        pass
 
 
 def init_pc(headless=HEADLESS, num_browsers=NUM_BROWSERS, num_repetitions=1):  # initialize bannerdetection by setting url file and webdriver instance
@@ -246,8 +220,7 @@ def init_pc(headless=HEADLESS, num_browsers=NUM_BROWSERS, num_repetitions=1):  #
     SIMPLE_DETECTION: {SIMPLE_DETECTION}
     search for reject btn in setting: {REJ_IN_SET}
     NC_ADDON: {NC_ADDON}
-    mobile agent: {MOBILE_AGENT}
-    banner interaction: {BANNERINTERACTION} \n\n""" + "__"*30 + "\n"
+    mobile agent: {MOBILE_AGENT}\n\n""" + "__"*30 + "\n"
     print(init_str)
 
     try:
@@ -368,12 +341,12 @@ def find_cookie_banners(origin_el=None, translate=False, stale_flag=False):
             shadowdom_flag = False
         else:
             shadowdom_flag = True
+
         if translate:
             detected_lang = this_lang
             els_with_cookie = find_els_with_cookie(origin_el, detected_lang)
         else:
             detected_lang = "en"
-            # find all the element with cookies related words
             els_with_cookie = find_els_with_cookie(origin_el)
         if els_with_cookie:
             banners_map = find_fixed_ancestors(els_with_cookie)
@@ -396,6 +369,32 @@ def find_cookie_banners(origin_el=None, translate=False, stale_flag=False):
             for dom_pair in shadowdom_banners:
                 banners.append(dom_pair)
                 # if is_inside_viewport(dom_pair[0]):  # check if the banner is in viewport
+
+        if not banners or len(banners) == 0:
+            wait = WebDriverWait(driver, 2)
+            body_el = wait.until(ec.visibility_of_element_located((By.TAG_NAME, "body")))
+
+            time.sleep(1)
+            WebDriverWait(driver, 1).until(lambda d: d.execute_script('return document.readyState') == 'complete')
+
+            origin_el = body_el
+            
+            if translate:
+                detected_lang = this_lang
+                els_with_cookie = find_els_with_cookie2(origin_el, detected_lang)
+            else:
+                detected_lang = "en"
+                els_with_cookie = find_els_with_cookie2(origin_el)
+            if els_with_cookie:
+                banners_map = find_fixed_ancestors(els_with_cookie)
+                if not banners_map:
+                    banners_map = find_by_zindex(els_with_cookie)
+                if not banners_map:
+                    banners_map[origin_el] = find_deepest_el(els_with_cookie)
+                for item in banners_map.items():
+                    optimal_el = find_optimal(driver, item)
+                    if is_inside_viewport(optimal_el) and has_enough_word(optimal_el) and not is_signin_banner(optimal_el):
+                        banners.append(optimal_el)
 
         return banners
     except StaleElementReferenceException as e:  # handle specific exception
@@ -450,14 +449,6 @@ def detect_banners(data, running_for_category_detection=False):  # return banner
                 
                 if not running_for_category_detection:
                     data.ttw = (att + 1) * ATTEMPT_STEP_SLEEP_TIME
-        if not banners and TRANSLATION:
-            # if no banner is found and the language of site is not english then translate the page and check again
-            if "en" not in this_lang and is_in_langlist(this_lang):
-                translate_page(driver)
-                banners = find_cookie_banners(translate=True)
-                if not running_for_category_detection:
-                    this_status = 3
-                    data.status = this_status
     except Exception as ex:
         with open(log_file, 'a+') as f:
             print("failed to continue detecting banner for domain: " + data.domain + " " + traceback.format_exc(), file=f)
@@ -808,15 +799,6 @@ def extract_banners_data(banners):
     return banners_data
 
 
-def set_data_in_db_error(data):
-    try:
-        set_data_in_db(data)
-    except Exception as ex:
-        with open(log_file, 'a+') as f:
-            print("failed to continue setting data in DB for domain: " + data.domain + " " + traceback.format_exc(), file=f)
-            MyExceptionLogger(err=ex, file=f)
-
-
 def set_data_in_db(data):
     global driver, this_url, this_domain, this_status, this_lang, visit_db, this_run_url
     if data.openwpm:
@@ -1073,8 +1055,6 @@ def run_all_for_domains(DMN, URL):
             MyExceptionLogger(err=ex, file=f)
 
 
-lock = threading.Lock()
-
 
 def watchdog(domain):
     """ Kills the driver if it takes too long on a domain. """
@@ -1094,12 +1074,12 @@ def watchdog(domain):
 
     try:
         if not driver_ref["in_processing"]:
+            driver_ref["restart"] = True  # Signal main thread to restart driver
             print("killing driver in watchdog")
             driver_ref["driver"].quit()  # Kill Selenium driver
     except:
         print("Error in quiting driver in watchdog")
         pass  # Ignore errors if already closed
-    driver_ref["restart"] = True  # Signal main thread to restart driver
 
 
 def close_driver():
@@ -1186,6 +1166,8 @@ def detect_banner_category(data, i):
         time.sleep(5)
 
         try:
+            if user_detected_as_bot(driver):
+                return False, False, False, False, False, False, "BOT DETECTED", "BOT DETECTED", -1
             # all the code and the related function calls marked under <> is subject to remove per next weekly
             # meeting discussion 
 
@@ -1194,7 +1176,11 @@ def detect_banner_category(data, i):
             ActionChains(driver).send_keys(Keys.ESCAPE).perform()
             ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(3, 6)).perform()
             ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(3, 6)).perform()
-            ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(3, 6)).perform()
+            ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(0.5, 1.5)).perform()
+            ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(0.5, 1.5)).perform()
+            
+            if user_detected_as_bot(driver):
+                return False, False, False, False, False, False, "BOT DETECTED", "BOT DETECTED", -1
 
             # If banner was closed by Escape, it is likely a simple non-blocking banner. 
             if not is_new_ui_area_same_as_old_banner_area(data, i) and not does_banner_exist(data, i):
@@ -1208,81 +1194,15 @@ def detect_banner_category(data, i):
 
                 return banner_closed, is_navigated, is_scrolled, is_text_selected, clicked, url_changed, banner_category, branch, closing_score
 
-            element = driver.find_element(By.TAG_NAME, "html")
-            ActionChains(driver).move_to_element(element).click().pause(random.uniform(3, 6)).perform()
-            element = driver.find_element(By.TAG_NAME, "html")
-            ActionChains(driver).move_to_element(element).click().pause(random.uniform(3, 6)).perform()
-            element = driver.find_element(By.TAG_NAME, "body")
-            ActionChains(driver).move_to_element(element).click().pause(random.uniform(3, 6)).perform()
-
-            # Step: Clicking html may scroll down so go back up
-            scroll_to_top()
-            time.sleep(3)
-
-            # If banner was closed by Click, it is likely a simple non-blocking banner. 
-            if not is_new_ui_area_same_as_old_banner_area(data, i) and not does_banner_exist(data, i):
-                banner_closed = True
-                banner_category = "Simple non blocking banner"
-                closing_score = score_close_button_from_html(data.banners_data[i]["html"])
-                data.category = banner_category
-                branch = "if not is_new_ui_area_same_as_old_banner_area(data, i) and not does_banner_exist(data, i): driver.find_element('tag name', 'html').send_keys(Keys.ESCAPE)"
-
-                print(branch)
-
-                return banner_closed, is_navigated, is_scrolled, is_text_selected, clicked, url_changed, banner_category, branch, closing_score
-
-            time.sleep(2)
-            print("Quitting driver after clicking around banner!")
-            driver = quit_current_driver_and_start_new_webdriver(data)
-            if not driver:
-                print("failed to quit and restart driver or to reopen domain before 2nd loop")
-                return False, "Driver failed to restart"
-
-            # <>
-            # # Step : Trying to land click around banners, as it may close the banner if it's a simple non-blocking one
-            # current_url = driver.current_url
-            # redirected_url = get_redirected_url(data)
-            # url_changed = False
-
-            # clicked, reason_clicked = land_mouse_click_around_banner(data, i)
-            # if clicked:
-            #     # we should sleep before checking on url change but we are sleeping indirectly via below calls
-            #     url_changed = did_url_change(driver, current_url, redirected_url)
-            #     if url_changed:
-            #         banners_link = get_banners_links(data, i)
-            #         banner_html = get_banner_html_str(data, i)
-
-            #         # if we navigated to url that is present in the cookie banenr then navigate back
-            #         if (banners_link and driver.current_url in banners_link) or (banner_html and driver.current_url in banner_html):
-            #             url_changed = False
-            #             error_flag = navigate_to_data_url(data, driver)
-            #             print('if (banners_link and driver.current_url in banners_link) or (banner_html and driver.current_url in banner_html):')
-                        
-            #             # failed to navigate back to original url
-            #             if error_flag:
-            #                 print("if error_flag:")
-            #                 return banner_closed, is_navigated, is_scrolled, is_text_selected, clicked, url_changed, banner_category, branch
-            #             else:
-            #                 #if we navigated back to original url, wait for page to load properly
-            #                 time.sleep(15)
-
-            #     # if the banner is closed by click, or by navigating back after click due to reload it is simple non-blocking banner
-            #     if not is_new_ui_area_same_as_old_banner_area(data, i) and not does_banner_exist(data, i):
-            #         banner_closed = True
-            #         banner_category = "Simple non blocking banner"
-            #         data.category = banner_category
-            #         branch = "if clicked: if not is_new_ui_area_same_as_old_banner_area(data, i) and not does_banner_exist(data, i):"
-
-            #         print(branch)
-
-            #         return banner_closed, is_navigated, is_scrolled, is_text_selected, clicked, url_changed, banner_category, branch
-            # <>
-
+            
             # # Step: Check if banner is a static one, static banners remain present in dom but hides when page is scrolled down
             is_scrolled, reason_is_scrolled = scroll_atleast_half_page() # two cases of reason fully scrolled and partially scrolled
             if is_scrolled and reason_is_scrolled != "fully scrolled":
                 print(f"Page did not scrolled fully down via mouse scroll so scrolling via keyboard now")
                 scroll_to_bottom()
+
+            if user_detected_as_bot(driver):
+                return False, False, False, False, False, False, "BOT DETECTED", "BOT DETECTED", -1
 
             time.sleep(3)
             if not is_new_ui_area_same_as_old_banner_area(data, i) and does_banner_exist(data, i):
@@ -1300,6 +1220,9 @@ def detect_banner_category(data, i):
             # Step: Select a link via TAB, if a non cookie banner link is selected banner is floating else it is blocking
             tabbed, reason_tabbed = tab_to_select_link_in_banner(data, i)
             if tabbed:
+                if user_detected_as_bot(driver):
+                    return False, False, False, False, False, False, "BOT DETECTED", "BOT DETECTED", -1
+                
                 # Step: Scroll at least half page down or full and check if banner is still there
                 # two cases of reason fully scrolled and partially scrolled
                 is_scrolled, reason_is_scrolled = scroll_atleast_half_page()
@@ -1338,112 +1261,6 @@ def detect_banner_category(data, i):
                 print(branch)
 
                 return banner_closed, is_navigated, is_scrolled, is_text_selected, clicked, url_changed, banner_category, branch, closing_score
-
-            # <>
-            is_navigated, reason_is_navigated = False, "" # two cases: "no valid link", "exhausted valid links"
-            try:
-                if url_changed:
-                    print("URL changed after clicking around banner, likely due to banner click. Treating as navigation.")
-                    is_navigated, reason_is_navigated = True, "changed via click around banner"
-                else:
-                    is_navigated, reason_is_navigated = navigate_to_other_page(data, i)
-            except Exception as ex:
-                with open(log_file, 'a+') as f:
-                    print("failed in clicking non homepage link for : " + this_url + " in interact with banner. " + traceback.format_exc(), file=f)
-                    print("failed in clicking non homepage link for : " + this_url + " in interact with banner. " + traceback.format_exc(), file=f)
-                pass
-            print(f"step 2: is_navigated: {is_navigated}, reason_is_navigated: {reason_is_navigated}")
-
-            if is_navigated:
-                try:
-                    WebDriverWait(driver, 2).until(ec.visibility_of_element_located((By.TAG_NAME, "body")))
-                    time.sleep(3)
-                    WebDriverWait(driver, 1).until(lambda d: d.execute_script('return document.readyState') == 'complete')
-                except Exception as ex:
-                    try:
-                        WebDriverWait(driver, 2).until(ec.visibility_of_element_located((By.TAG_NAME, "body")))
-                        time.sleep(5)
-                        WebDriverWait(driver, 1).until(lambda d: d.execute_script('return document.readyState') == 'complete')
-                    except Exception as ex:
-                        with open(log_file, 'a+') as f:
-                            print("page might not have loaded completely for : " + this_url + " in interact with banner. " + traceback.format_exc(), file=f)
-
-            if not is_new_ui_area_same_as_old_banner_area(data, i) and not does_banner_exist(data, i):
-                banner_closed = True
-                banner_category = "Simple non blocking banner"
-                data.category = banner_category
-                branch = "if not is_new_ui_area_same_as_old_banner_area(data, i) and not does_banner_exist(data, i):"
-
-                print(branch)
-
-                return banner_closed, is_navigated, is_scrolled, is_text_selected, clicked, url_changed, banner_category, branch
-
-            # Step 3: Scroll at least half page down and check if banner is still there
-            is_scrolled, reason_is_scrolled = scroll_atleast_half_page() # two cases of reason fully scrolled and partially scrolled
-            if is_scrolled and reason_is_scrolled != "fully scrolled":
-                print(f"if is_scrolled and reason_is_scrolled != 'fully scrolled':")
-                scroll_to_bottom()
-
-            print(f"step 3: is_scrolled: {is_scrolled}, reason_is_scrolled: {reason_is_scrolled}")
-
-            detect_z_index_and_position_on_html_layout(data, i) # debugging for now
-
-            # if code below runs then it means banner_close=False 100%
-            if is_navigated:
-                if is_new_ui_area_same_as_old_banner_area(data, i, threshold=0.3):
-                    banner_closed = False
-                    banner_category = categorize_for_closing_option("Floating", data.banners_data[i]['html'])
-                    data.category = banner_category
-                    branch = "if is_navigated: if is_new_ui_area_same_as_old_banner_area(data, i, threshold=0.3):"
-
-                    print(branch)
-
-                    return banner_closed, is_navigated, is_scrolled, is_text_selected, clicked, url_changed, banner_category, branch
-                else:
-                    banner_closed = True
-                    banner_category = categorize_for_closing_option("Static", data.banners_data[i]['html'])
-                    data.category = banner_category
-                    branch = "if is_navigated: else:"
-
-                    print(branch)
-
-                    return banner_closed, is_navigated, is_scrolled, is_text_selected, clicked, url_changed, banner_category, branch
-            else:
-                # script tries to copy text via mouse click, if that copy is successful then it not blocking banner
-                is_text_selected, text_selection_reason = copy_text_of_elements(data, i)
-                print(f"else:: is_text_selected: {is_text_selected}, text_selection_reason: {text_selection_reason}")
-                if is_text_selected:
-                    # write small case that checks if the current url is of some privacy policy page or cookie policy page
-                    is_scrolled, reason_is_scrolled = scroll_atleast_half_page()
-                    if is_new_ui_area_same_as_old_banner_area(data, i, threshold=0.1):
-                        banner_closed = False
-                        banner_category = categorize_for_closing_option("Floating", data.banners_data[i]['html'])
-                        data.category = banner_category
-                        branch = "else: if is_text_selected: if is_new_ui_area_same_as_old_banner_area(data, i, threshold=0.1):"
-
-                        print(branch)
-
-                        return banner_closed, is_navigated, is_scrolled, is_text_selected, clicked, url_changed, banner_category, branch
-                    else:
-                        banner_closed = False
-                        banner_category = categorize_for_closing_option("Static", data.banners_data[i]['html'])
-                        data.category = banner_category
-                        branch = "else: if is_text_selected: else:"
-
-                        print(branch)
-
-                        return banner_closed, is_navigated, is_scrolled, is_text_selected, clicked, url_changed, banner_category, branch
-                
-                # blocking banner
-                banner_closed = False
-                banner_category = categorize_for_closing_option("Blocking", data.banners_data[i]['html'])
-                data.category = banner_category
-                branch = "Blocking banner type"
-
-                print(branch)
-
-                return banner_closed, is_navigated, is_scrolled, is_text_selected, clicked, url_changed, banner_category, branch
-            # <>
         except Exception as ex:
             with open(log_file, 'a+') as f:
                 print("Encountered an error while parsing banner data for url: " + data.url + " " + traceback.format_exc())
@@ -1498,45 +1315,9 @@ def tab_restart_browser(webdriver):
     webdriver.switch_to.window(webdriver.window_handles[0])
 
 
-def restart_browser_and_navigate(data):
-    global driver
-    try:
-        tab_restart_browser(driver)
-        set_webdriver(driver)
-        time.sleep(2)
-    except:
-        print("error while restarting browser")
-        pass
-
-    error_flag = False
-
-    try:
-        driver.get(data.url)
-    except Exception as E:
-        try:
-            driver.get(data.url)
-        except TimeoutException:  # timeout
-            error_flag = True
-        except Exception as E:  # unreachable
-            error_flag = True
-
-    if not error_flag:
-        time.sleep(random.uniform(10, 15))
-
-    # Close modal dialog if exists
-    try:
-        WebDriverWait(driver, 2).until(EC.alert_is_present())
-        alert = driver.switch_to.alert
-        alert.dismiss()
-        time.sleep(0.1)
-    except (TimeoutException, WebDriverException):
-        pass
-
-    return error_flag
-
-
 def tab_to_select_link_in_banner(data, i):
     global driver
+    redirected_url = get_redirected_url(data)
 
     try:
         links = get_all_links_on_page()
@@ -1547,13 +1328,13 @@ def tab_to_select_link_in_banner(data, i):
 
         href_count = {}
         button_count = {}
-        
+
         actions = ActionChains(driver)
 
         tab_count = len(links) + len(buttons) + int(min(len(links), len(buttons)) * 1.5)
 
         print("1st loop for tabbing")
-        for i in range(0, tab_count):
+        for j in range(0, tab_count):
             actions.send_keys(Keys.TAB).perform()
             time.sleep(random.uniform(1, 2.5))
             # actions.reset_actions()
@@ -1588,21 +1369,15 @@ def tab_to_select_link_in_banner(data, i):
                     print(f"Breaking: active_element_href: {active_element_href}")
                     break
 
-                # print(f"active_element_href not in banner_html and active_element_href not in banners_link: {active_element_href not in banner_html and active_element_href not in banners_link}")
-                # print(f"is_tabbed_href_valid(active_element_href): {is_tabbed_href_valid(active_element_href)}")
-
-                if is_tabbed_href_valid(active_element_href) and active_element_href not in banner_html and active_element_href not in banners_link:
+                if is_tabbed_href_valid(data, redirected_url, active_element_href) \
+                    and active_element_href not in banner_html \
+                    and active_element_href not in banners_link:
+                    
                     print(f"returning True: active_element_href: {active_element_href}")
                     return True, "tabbed to a valid link in the banner"
 
         href_count = {}
         button_count = {}
-
-        # error_flag = reopen_domain_page(data.url, driver)
-
-        # if error_flag:
-        #     print("error while reopening domain page after starting new driver")
-        #     return None
 
         time.sleep(2)
         driver = quit_current_driver_and_start_new_webdriver(data)
@@ -1613,10 +1388,9 @@ def tab_to_select_link_in_banner(data, i):
         actions = ActionChains(driver)
         actions.send_keys(Keys.TAB).perform()
         print("2nd loop for tabbing after navigating back to original url")
-        for i in range(0, tab_count):
+        for j in range(0, tab_count):
             actions.key_down(Keys.SHIFT).send_keys(Keys.TAB).key_up(Keys.SHIFT).perform()
             time.sleep(random.uniform(1, 2.5))
-            # actions.reset_actions()
 
             active_element = driver.switch_to.active_element
             active_element_tag = active_element.tag_name
@@ -1659,13 +1433,13 @@ def tab_to_select_link_in_banner(data, i):
                     print(f"Breaking: active_element_href: {active_element_href}")
                     break
 
-                # print(f"active_element_href not in banner_html and active_element_href not in banners_link: {active_element_href not in banner_html and active_element_href not in banners_link}")
-                # print(f"is_tabbed_href_valid(active_element_href): {is_tabbed_href_valid(active_element_href)}")
-
-                if is_tabbed_href_valid(active_element_href) and active_element_href not in banner_html and active_element_href not in banners_link:
+                if is_tabbed_href_valid(data, redirected_url, active_element_href) \
+                    and active_element_href not in banner_html \
+                    and active_element_href not in banners_link:
+                    
                     print(f"returning True: active_element_href: {active_element_href}")
                     return True, "tabbed to a valid link in the banner"
-
+                    
     except Exception as ex:
         with open(log_file, 'a+') as f:
             print("Encountered an error in tab_to_select_link_in_banner for url: " + this_url + " " + traceback.format_exc())
@@ -1680,35 +1454,6 @@ def tab_to_select_link_in_banner(data, i):
         print(f"{key}: {value}")
         
     return False, "exhausted valid links to tab to in banner"
-
-
-def categorize_for_closing_option(category, html):
-    banner_category = ""
-
-    try:
-        if category == "Blocking":
-            if contains_close_button(html):
-                banner_category = "Blocking banner with option to close"
-            else:
-                banner_category = "Blocking banner"
-        elif category == "Static":
-            if contains_close_button(html):
-                banner_category = "Static non blocking banner stays until action (close option given)"
-            else:
-                banner_category = "Static non blocking banner stays until action"
-        elif category == "Floating":
-            if contains_close_button(html):
-                banner_category = "Floating non blocking banner stays until action (close option given)"
-            else:
-                banner_category = "Floating non blocking banner stays until action"
-        else:
-            banner_category = "categorize_for_closing_option failed"
-    except Exception as ex:
-        with open(log_file, 'a+') as f:
-            print("Encountered an error in categorize_for_closing_option for url: " + this_url + " " + traceback.format_exc())
-            print("Encountered an error in categorize_for_closing_option for url: " + this_url + " " + traceback.format_exc(), file=f)
-
-    return banner_category
 
 
 def is_element_overlapping_box(driver, element, x, y, w, h):
@@ -1738,29 +1483,6 @@ def is_element_overlapping_box(driver, element, x, y, w, h):
         return overlap;
     """
     return driver.execute_script(script, element, {"x": x, "y": y, "w": w,"h": h})
-
-
-def get_viewports_height_and_width():
-    global driver
-    try:
-        return driver.execute_script("""
-            return {
-                width: window.innerWidth,
-                height: window.innerHeight
-            }
-        """)
-    except:
-        time.sleep(3)
-        try:
-            return driver.execute_script("""
-                return {
-                    width: window.innerWidth,
-                    height: window.innerHeight
-                }
-            """)
-        except:
-            print("failed to get viewport height and width")
-            return False
 
 
 def get_redirected_url(data):
@@ -1798,15 +1520,7 @@ def did_url_change(driver, current_url, redirected_url):
     return url_changed
 
 
-def refind_link_by_href_safe(driver, old_element):
-    # try:
-    #     href = old_element.get_attribute("href")
-    # except Exception:
-    #     print("failed to get href attribute from old_element in refind_link_by_href_safe")
-    #     return None
-
-    href = old_element
-
+def refind_link_by_href_safe(driver, href):
     if not href:
         return None
 
@@ -1827,46 +1541,38 @@ def refind_link_by_href_safe(driver, old_element):
         return None
 
 
-def navigate_to_other_page(data, i):
+def navigate_to_other_page_and_then_back(data, i, href, redirected_url):
+    scroll_to_top()
     global driver
 
     current_url = driver.current_url
-    redirected_url = get_redirected_url(data)
+    
+    original_window = driver.current_window_handle
+    before_handles = driver.window_handles
 
-    new_tabs_opened = 0
-
+    print(f"navigate_to_other_page_and_then_back index: {i}")
     bx = data.banners_data[i]['x']
     by = data.banners_data[i]['y']
     bw = data.banners_data[i]['w']
     bh = data.banners_data[i]['h']
 
-    scroll_to_bottom()
-    time.sleep(1.5)
-    scroll_to_top()
-
-    valid_links = filter_valid_links_for_strict_navigation(data, i)
-    limit = 10
-
     actions = ActionChains(driver)
     for z in range(0, 3):
-        link_to_click_index = 0
+        link_to_click = refind_link_by_href_safe(driver, href)
 
-        while True:
-            original_window = driver.current_window_handle
-            before_handles = driver.window_handles
+        if not link_to_click:
+            continue
 
-            if link_to_click_index >= len(valid_links) or link_to_click_index >= limit:
-                print(f"if link_to_click_index >= len(valid_links) or link_to_click_index >= limit: same tab for url {data.url}")
-                print(f"if {link_to_click_index} >= {len(valid_links)} or {link_to_click_index} >= {limit}: same tab for url {data.url}")
-                break
-
-            link_to_click = refind_link_by_href_safe(driver, valid_links[link_to_click_index])
-            link_to_click_index += 1
-
-            if not link_to_click:
-                continue
-
+        try:
             try:
+                # ensure element is in viewport
+                if z == 0:
+                    driver.execute_script("arguments[0].scrollIntoView({block:'center', inline:'center'});", link_to_click)
+                elif z == 1:
+                    driver.execute_script("arguments[0].scrollIntoView({block:'start', inline:'nearest'});", link_to_click)
+                else:
+                    driver.execute_script("arguments[0].scrollIntoView({block:'end', inline:'nearest'});", link_to_click)
+            except:
                 try:
                     # ensure element is in viewport
                     if z == 0:
@@ -1875,155 +1581,64 @@ def navigate_to_other_page(data, i):
                         driver.execute_script("arguments[0].scrollIntoView({block:'start', inline:'nearest'});", link_to_click)
                     else:
                         driver.execute_script("arguments[0].scrollIntoView({block:'end', inline:'nearest'});", link_to_click)
-                except:
-                    try:
-                        # ensure element is in viewport
-                        if z == 0:
-                            driver.execute_script("arguments[0].scrollIntoView({block:'center', inline:'center'});", link_to_click)
-                        elif z == 1:
-                            driver.execute_script("arguments[0].scrollIntoView({block:'start', inline:'nearest'});", link_to_click)
-                        else:
-                            driver.execute_script("arguments[0].scrollIntoView({block:'end', inline:'nearest'});", link_to_click)
-                    except Exception as ex:
-                        limit = min(limit + 1, 20)
-                        with open(log_file, 'a+') as f:
-                            print("failed in scrolling into view and waiting for clickable for url: " + data.url + " in same tab navigate_to_other_page.")
-                            print("failed in scrolling into view and waiting for clickable for url: " + data.url + " in same tab navigate_to_other_page. " + traceback.format_exc(), file=f)
-                            continue
+                except Exception as ex:
+                    with open(log_file, 'a+') as f:
+                        print("failed in scrolling into view and waiting for clickable for url: " + data.url)
+                        print("failed in scrolling into view and waiting for clickable for url: " + data.url + "\n" + traceback.format_exc(), file=f)
+                        continue
 
-                if is_element_overlapping_box(driver, link_to_click, bx, by, bw, bh):
-                    limit = min(limit + 1, 20)
-                    print("link_to_click is overlapping with banner area for url: " + data.url + " in same tab navigate_to_other_page, skipping this link")
+                link_to_click = refind_link_by_href_safe(driver, href)
+
+                if not link_to_click:
                     continue
 
-                # safe click (no offset)
-                try:
-                    actions.move_to_element(link_to_click).pause(random.uniform(0.3, 0.5)).click().perform()
-                except:
-                    limit = min(limit + 1, 20)
-                    print("click failed for url: " + data.url + " in same tab navigate_to_other_page, trying next link")
-                    actions.reset_actions()
-                    continue
-                
-                time.sleep(random.uniform(1.5, 2))  # Wait for new tab since new tab could be opened despite the filteration
-                new_tab_count = close_other_tabs_if_opened(original_window, before_handles)
-
-                if new_tab_count > 0:
-                    new_tabs_opened += new_tab_count
-                    continue
-
-                url_changed = did_url_change(driver, current_url, redirected_url)
-
-                actions.reset_actions()
-                # ✅ Check if URL changed
-                if url_changed:
-                    print(f"link_to_click.get_attribute('href'): {link_to_click.get_attribute('href')}")
-                    print(f"if url_changed: same tab for url driver.current_url: {driver.current_url}")
-                    print(f"if url_changed: same tab for url current_url: {current_url}")
-                    print(f"if url_changed: same tab for url redirected_url: {redirected_url}")
-                    return True, "success"
-            except Exception as ex:
-                limit = min(limit + 1, 20)
-                with open(log_file, 'a+') as f:
-                    print("Encountered an error while clicking a link same tab for url: " + data.url)
-                    print("Encountered an error while clicking a link same tab for url: " + data.url + " " + str(ex), file=f)
-                    print("Encountered an error while clicking a link same tab for url: " + data.url + " " + traceback.format_exc(), file=f)
-
-                time.sleep(0.5)
-                # Clean up extra tabs just in case
-                new_tab_count = close_other_tabs_if_opened(original_window, before_handles)
-
-                if new_tab_count > 0:
-                    new_tabs_opened += new_tab_count
-                    continue
-
-    if new_tabs_opened > 0:
-        print(f"{new_tabs_opened} new tabs were opened during navigate_to_other_page for same tab run for url {data.url}")
-        return True, "new tabs opened"
-
-    scroll_to_bottom()
-    time.sleep(1.5)
-    scroll_to_top()
-
-    valid_links = filter_valid_links_for_loosy_navigation(data, i)
-    limit = 0
-
-    for z in range(0, 3):
-        link_to_click_index = 0
-
-        while True:
-            original_window = driver.current_window_handle
-            before_handles = driver.window_handles
-            if link_to_click_index >= len(valid_links) or link_to_click_index >= limit:
-                print(f"if link_to_click_index >= len(valid_links) or link_to_click_index >= limit: new tab for url {data.url}")
-                print(f"if {link_to_click_index} >= {len(valid_links)} or {link_to_click_index} >= {limit}: new tab for url {data.url}")
-                break
-
-            link_to_click = valid_links[link_to_click_index]
-            link_to_click_index += 1
-
-            if not link_to_click:
+            if is_element_overlapping_box(driver, link_to_click, bx, by, bw, bh):
+                print("link_to_click is overlapping with banner area for url: " + data.url)
                 continue
 
+            # safe click (no offset)
             try:
-                try:
-                    # ensure element is in viewport
-                    if z == 0:
-                        driver.execute_script("arguments[0].scrollIntoView({block:'center', inline:'center'});", link_to_click)
-                    elif z == 1:
-                        driver.execute_script("arguments[0].scrollIntoView({block:'start', inline:'nearest'});", link_to_click)
-                    else:
-                        driver.execute_script("arguments[0].scrollIntoView({block:'end', inline:'nearest'});", link_to_click)
-                except:
-                    try:
-                        # ensure element is in viewport
-                        if z == 0:
-                            driver.execute_script("arguments[0].scrollIntoView({block:'center', inline:'center'});", link_to_click)
-                        elif z == 1:
-                            driver.execute_script("arguments[0].scrollIntoView({block:'start', inline:'nearest'});", link_to_click)
-                        else:
-                            driver.execute_script("arguments[0].scrollIntoView({block:'end', inline:'nearest'});", link_to_click)
-                    except Exception as ex:
-                        limit = min(limit + 1, 20)
-                        with open(log_file, 'a+') as f:
-                            print("failed in scrolling into view and waiting for clickable for url: " + data.url + " in new tab navigate_to_other_page. " + traceback.format_exc(), file=f)
-                            print("failed in scrolling into view and waiting for clickable for url: " + data.url + " in new tab navigate_to_other_page. " + traceback.format_exc(), file=f)
-                            continue
-
-                if is_element_overlapping_box(driver, link_to_click, bx, by, bw, bh):
-                    limit = min(limit + 1, 20)
-                    print("link_to_click is overlapping with banner area for url: " + data.url + " in new tab navigate_to_other_page, skipping this link")
-                    continue
-
-                try:
-                    actions.move_to_element(link_to_click).pause(random.uniform(0.3, 0.8)).click().perform()
-                except:
-                    limit = min(limit + 1, 20)
-                    print(f"if url_changed: same tab for url data.url: {data.url}")
-                    actions.reset_actions()
-                    continue
-
-                time.sleep(random.uniform(1.5, 2.5))  # Wait for new tab
-                new_tab_count = close_other_tabs_if_opened(original_window, before_handles)
-
+                actions.move_to_element(link_to_click).pause(random.uniform(0.3, 0.5)).click().perform()
+            except:
+                print("click failed for url: " + data.url)
                 actions.reset_actions()
-                if new_tab_count > 0:
-                    print(f"link_to_click.get_attribute('href'): {link_to_click.get_attribute('href')}")
-                    print(f"new tabs were opened during navigate_to_other_page for new tab run url {data.url}")
-                    return True, "new tab opened"
-            except Exception as ex:
-                limit = min(limit + 1, 20)
-                with open(log_file, 'a+') as f:
-                    print("Encountered an error while clicking a link new tabfor url: " + data.url)
-                    print("Encountered an error while clicking a link new tab for url: " + data.url + " " + str(ex), file=f)
-
-                # Clean up extra tabs just in case
-                new_tab_count = close_other_tabs_if_opened(original_window, before_handles)
-                if new_tab_count > 0:
-                    return True, "new tab opened"
-                
                 continue
-        
+            
+            time.sleep(random.uniform(1.5, 2))  # Wait for new tab since new tab could be opened despite the filteration
+            new_tab_count = close_other_tabs_if_opened(original_window, before_handles)
+
+            if new_tab_count > 0:
+                time.sleep(1)  # Wait for new tab since new tab could be opened despite the filteration
+                print(f"tabs were opened during navigate_to_other_page {data.url}")
+                reopen_domain_page(data.url, driver)
+                return True, "new tabs opened"
+
+            url_changed = did_url_change(driver, current_url, redirected_url)
+
+            actions.reset_actions()
+            # ✅ Check if URL changed
+            if url_changed:
+                print(f"link_to_click.get_attribute('href'): {link_to_click.get_attribute('href')}")
+                print(f"if url_changed: same tab for url driver.current_url: {driver.current_url}")
+                print(f"if url_changed: same tab for url current_url: {current_url}")
+                print(f"if url_changed: same tab for url redirected_url: {redirected_url}")
+                reopen_domain_page(data.url, driver)
+                return True, "success"
+        except Exception as ex:
+            with open(log_file, 'a+') as f:
+                print("Encountered an error while clicking a link same tab for url: " + data.url)
+                print("Encountered an error while clicking a link same tab for url: " + data.url + " " + str(ex), file=f)
+                print("Encountered an error while clicking a link same tab for url: " + data.url + " " + traceback.format_exc(), file=f)
+
+            time.sleep(0.5)
+            # Clean up extra tabs just in case
+            new_tab_count = close_other_tabs_if_opened(original_window, before_handles)
+
+            if new_tab_count > 0:
+                time.sleep(1)  # Wait for new tab since new tab could be opened despite the filteration
+                reopen_domain_page(data.url, driver)
+                return True, "new tabs opened"
+
     return False, "exhausted valid links"
 
 
@@ -2129,250 +1744,6 @@ def scroll_to_bottom():
         print("Failed to reach bottom")
 
 
-def get_page_text_elements(data, i):
-    global driver
-    try:
-        elements = driver.find_elements(By.XPATH, "//p | //h1 | //h2 | //h3 | //h4 | //h5 | //h6 | //span | //div")
-    except Exception as ex:
-        print(f"Exception in get_page_text_elements while finding elements: {traceback.format_exc()}")
-        return
-
-    excluded_tags = {"a", "button", "input", "select", "textarea", "label"}
-
-    try:
-        extract_leaf_strings_from_old_banner = extract_full_leaf_strings(data.banners_data[i]['html'])
-        joined_extract_leaf_strings_from_old_banner = " ".join(extract_leaf_strings_from_old_banner)
-        banner_texts = data.banners_data[i]['texts']
-        joined_banner_text = " ".join(data.banners_data[i]['texts'])
-    except Exception as ex:
-        print(f"Exception in get_page_text_elements: {traceback.format_exc()}")
-        extract_leaf_strings_from_old_banner = []
-        joined_extract_leaf_strings_from_old_banner = ""
-        banner_texts = []
-        joined_banner_text = ""
-
-    valid_elements = []
-
-    for el in elements:
-        try:
-            tag = el.tag_name.lower()
-            text = el.text.strip()
-
-            if not text:
-                continue
-
-            if tag in excluded_tags:
-                continue
-
-            _ = el.tag_name  
-
-            if not el.is_displayed():
-                continue
-
-            if not el.is_enabled():
-                continue
-
-            text = el.text.strip()
-            if not text:
-                continue
-
-            if (
-                el.get_attribute("onclick") or
-                el.get_attribute("role") in ("button", "link") or
-                el.get_attribute("tabindex") is not None or
-                el.get_attribute("contenteditable") == "true"
-            ):
-                continue
-
-            parent = el.find_element(By.XPATH, "./ancestor::*[self::a or self::button or self::input or self::select or self::textarea or self::label]")
-            if parent:
-                continue
-
-            if text in extract_leaf_strings_from_old_banner or text in joined_extract_leaf_strings_from_old_banner:
-                continue
-        
-            if text in banner_texts or text in joined_banner_text:
-                continue
-
-            valid_elements.append(el)
-
-        except Exception:
-            # ignore stale or hidden elements
-            continue
-        
-    return valid_elements
-
-
-def copy_text_of_elements(data, i, copy_text=True):
-    # get to the home page
-    global driver
-
-    bx = data.banners_data[i]['x']
-    by = data.banners_data[i]['y']
-    bw = data.banners_data[i]['w']
-    bh = data.banners_data[i]['h']
-
-    scroll_to_bottom()
-    time.sleep(3)
-    scroll_to_top()
-
-    valid_elements = []
-    
-    if copy_text:
-        valid_elements = get_page_text_elements(data, i)
-    else:
-        valid_elements = filter_valid_links_for_text_copying(data, i)
-
-    limit = 15
-    for z in range(0, 3):
-        element_to_copy_text_index = 0
-
-        while True:
-            original_window = driver.current_window_handle
-            before_handles = driver.window_handles
-            if element_to_copy_text_index >= len(valid_elements) or element_to_copy_text_index >= limit:
-                print(f"if element_to_copy_text_index >= len(valid_elements) or element_to_copy_text_index >= limit: same tab for url {data.url}")
-                print(f"if {element_to_copy_text_index} >= {len(valid_elements)} or {element_to_copy_text_index} >= {limit}: same tab for url {data.url}")
-                break
-
-            element_to_copy_text = valid_elements[element_to_copy_text_index]
-            element_to_copy_text_index += 1
-
-            try:
-                try:
-                    # ensure element is in viewport
-                    if z == 0:
-                        driver.execute_script("arguments[0].scrollIntoView({block:'center', inline:'center'});", element_to_copy_text)
-                    elif z == 1:
-                        driver.execute_script("arguments[0].scrollIntoView({block:'start', inline:'nearest'});", element_to_copy_text)
-                    else:
-                        driver.execute_script("arguments[0].scrollIntoView({block:'end', inline:'nearest'});", element_to_copy_text)
-                except:
-                    try:
-                    # ensure element is in viewport
-                        if z == 0:
-                            driver.execute_script("arguments[0].scrollIntoView({block:'center', inline:'center'});", element_to_copy_text)
-                        elif z == 1:
-                            driver.execute_script("arguments[0].scrollIntoView({block:'start', inline:'nearest'});", element_to_copy_text)
-                        else:
-                            driver.execute_script("arguments[0].scrollIntoView({block:'end', inline:'nearest'});", element_to_copy_text)
-                    except Exception as ex:
-                        with open(log_file, 'a+') as f:
-                            print("failed in scrolling into view and waiting for clickable for url: " + data.url + " in copy_text_of_elements. " + traceback.format_exc(), file=f)
-                            print("failed in scrolling into view and waiting for clickable for url: " + data.url + " in copy_text_of_elements. " + traceback.format_exc(), file=f)
-                            continue
-
-                if is_element_overlapping_box(driver, element_to_copy_text, bx, by, bw, bh):
-                    print("element_to_copy_text is overlapping with banner area for url: " + data.url + " in copy_text_of_elements, skipping this link")
-                    continue
-                
-                copied, copied_text = copy_text_of_element(element_to_copy_text)
-                
-                close_other_tabs_if_opened(original_window, before_handles)
-
-                if copied and len(copied_text.split()) > 2:
-                    print("if copied and len(copied_text.split()) > 2:")
-
-                    extract_leaf_strings_from_old_banner = extract_full_leaf_strings(data.banners_data[i]['html'])
-                    joined_extract_leaf_strings_from_old_banner = " ".join(extract_leaf_strings_from_old_banner)
-                    
-                    if (copied_text in extract_leaf_strings_from_old_banner
-                        or copied_text in joined_extract_leaf_strings_from_old_banner):
-                        with open(log_file, 'a+') as f:
-                            print(f"Discarding text selection since copied text is part of banner text for url: {this_url}", file=f)
-                            print(f"Discarding text selection since tex: {this_url}")
-                        continue
-
-                if copied:
-                    return True, "success"
-            except Exception as ex:
-                with open(log_file, 'a+') as f:
-                    print("Encountered copy_text_of_elements for url: " + data.url)
-                    print("Encountered copy_text_of_elements for url: " + data.url + " " + str(ex), file=f)
-                    print("Encountered copy_text_of_elements for url: " + data.url + " " + traceback.format_exc(), file=f)
-
-                time.sleep(1.5)
-                # Clean up extra tabs just in case
-                close_other_tabs_if_opened(original_window, before_handles)
-                continue
-    
-    return False, "exhausted valid links"
-
-
-def land_mouse_click_around_banner(data, i):
-    global driver
-    viewport = get_viewports_height_and_width()
-
-    if not viewport:
-        return False, "exception in get_viewports_height_and_width"
-
-    vw, vh = viewport["width"], viewport["height"]
-
-    bx = data.banners_data[i]['x']
-    by = data.banners_data[i]['y']
-    bw = data.banners_data[i]['w']
-    bh = data.banners_data[i]['h']
-
-    M = 80 # padding
-
-    vw = vw - 2 * M
-    vh = vh - 2 * M
-
-    bx = bx - M
-    by = by - M
-    bw = bw + 2 * M
-    bh = bh + 2 * M
-
-    bx = max(0, bx)
-    by = max(0, by)
-    bw = min(vw - bx, bw)
-    bh = min(vh - by, bh)
-
-    print("get_safe_drag_points inputs for url: " + this_url + f" vw: {vw}, vh: {vh}, bx: {bx}, by: {by}, bw: {bw}, bh: {bh}")
-
-    count = 0
-
-    element = driver.find_element(By.TAG_NAME, "html")
-    if not element:
-        element = driver.find_element(By.CSS_SELECTOR, "html")
-    if not element:
-        element = driver.find_element(By.TAG_NAME, "body")
-    if not element:
-        element = driver.find_element(By.CSS_SELECTOR, "body")
-
-    while count < 15:
-        original_window = driver.current_window_handle
-        before_handles = driver.window_handles
-        try:
-            (x1, y1) = get_safe_drag_point(vw, vh, bx, by, bw, bh)
-            
-            actions = ActionChains(driver)
-
-            actions.move_to_element_with_offset(element, x1, y1).click().perform()
-            time.sleep(random.uniform(0.2, 0.4))
-
-            ActionChains(driver).send_keys(Keys.ESCAPE).perform()
-            time.sleep(random.uniform(0.5, 1))
-            
-            close_other_tabs_if_opened(original_window, before_handles)
-
-            print(f"Clicked at safe point ({x1}, {y1}) around banner for url: " + this_url)
-            return True, "success"
-        except MoveTargetOutOfBoundsException as ex:
-            with open(log_file, 'a+') as f:
-                print("Encountered a move target out of bounds exception in land_mouse_click_around_banner for url: " + this_url)
-                print("Encountered a move target out of bounds exception in land_mouse_click_around_banner for url: " + this_url, file=f)
-        except Exception as ex:
-            with open(log_file, 'a+') as f:
-                print("Encountered an error in land_mouse_click_around_banner for url: " + this_url + " " + traceback.format_exc())
-                print("Encountered an error in land_mouse_click_around_banner for url: " + this_url + " " + traceback.format_exc(), file=f)
-            close_other_tabs_if_opened(original_window, before_handles)
-
-        count += 1
-
-    return False, "failed"
-
-
 def close_other_tabs_if_opened(original_window, before_handles):
     global driver
     count = 0
@@ -2415,56 +1786,6 @@ def close_other_tabs_if_opened(original_window, before_handles):
         return count
 
 
-def scroll_so_element_is_visible_at_bottom(y, h, vh, element):
-    global driver
-    driver.execute_script("""
-        const el = arguments[0];
-        const rect = el.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-
-        // If element is below viewport
-        if (rect.top > viewportHeight) {
-            // Scroll just enough so element appears at bottom
-            window.scrollBy({
-                top: rect.top - viewportHeight + 10, // +10px small margin
-                behavior: 'auto'
-            });
-        }
-        """, element)
-    
-    # if (y + h) < (vh - 150): 
-    #     driver.execute_script("""
-    #         const el = arguments[0];
-    #         const rect = el.getBoundingClientRect();
-    #         const viewportHeight = window.innerHeight;
-
-    #         // If element is below viewport
-    #         if (rect.top > (viewportHeight - 50)) {
-    #             // Scroll just enough so element appears at bottom
-    #             window.scrollBy({
-    #                 top: rect.top - (viewportHeight + 50), // +50px small margin
-    #                 behavior: 'auto'
-    #             });
-    #         }
-    #         """, element)
-    # else: 
-    #     driver.execute_script("""
-    #         const el = arguments[0];
-    #         const offset = arguments[1];
-    #         const rect = el.getBoundingClientRect();
-    #         const viewportHeight = window.innerHeight;
-
-    #         // If element is below viewport
-    #         if (rect.top > (viewportHeight - offset)) {
-    #             // Scroll just enough so element appears at bottom
-    #             window.scrollBy({
-    #                 top: rect.top - (viewportHeight + offset), 
-    #                 behavior: 'auto'
-    #             });
-    #         }
-    #         """, element, h+50)
-
-
 def get_banners_links(data, i):
     banners_link = []
 
@@ -2496,7 +1817,7 @@ def get_banner_html_str(data, i):
     return banner_html
 
 
-def is_tabbed_href_valid(href):
+def is_tabbed_href_valid(data, redirected_url, href):
     try:
         if not href:
             print('if not href:')
@@ -2504,10 +1825,29 @@ def is_tabbed_href_valid(href):
 
         parsed = urlparse(href)
 
+        host = parsed.hostname
+        # remove port if present
+        if not host:
+            print("No hostname found")
+            return False
+        parts = host.split(".")
+
+        try:
+            current_domain = urlparse(data.url).hostname.split(".")[-2]
+            redirected_url_domain = urlparse(redirected_url).hostname.split(".")[-2]
+
+            link_domain = parts[-2]
+
+            if link_domain != current_domain and link_domain != redirected_url_domain:
+                print('if link_domain != current_domain and link_domain != redirected_url_domain:')
+                return False
+        except Exception as ex:
+            pass
+
         if not parsed.scheme.startswith("http") and not parsed.scheme.startswith("mailto"):
             print('is_tabbed_href_valid: if not parsed.scheme.startswith("http") or not parsed.scheme.startswith("mailto"):')
             return False
-        
+
         path = parsed.path.strip().lower()
 
         # skip homepage
@@ -2535,13 +1875,6 @@ def is_tabbed_href_valid(href):
             print("if any(fp in query for fp in forbidden_paths):")
             return False
 
-        # remove port if present
-        host = parsed.hostname
-        if not host:
-            print("No hostname found")
-            return False
-        parts = host.split(".")
-
         # Only proceed if there is a subdomain
         if len(parts) > 2:
             subdomains = parts[:-2]  # everything before domain + TLD
@@ -2561,221 +1894,6 @@ def is_tabbed_href_valid(href):
             print("filter_valid_links_for_loosy_tabbing Encountered an error in while parsing links for url: " + traceback.format_exc(), file=f)
 
     return True
-
-def filter_valid_links_for_strict_navigation(data, i):
-    current_url = driver.current_url
-    current_domain = urlparse(current_url).netloc.replace("www.", "")
-    links = get_all_links_on_page()
-
-    try:
-        with open("./datadir/test-artifact/1-Starting_Point_0/navigate_to_other_page.txt", 'a+') as f:
-            hrefs_str = "\n".join([link.get_attribute("href") for link in links if link.get_attribute("href")])
-            print(f"filter_valid_links_for_strict_navigation Found links for url: {data.url}.\n Hrefs\n: {hrefs_str}", file=f)
-    except:
-        pass
-
-    # links in banners
-    banners_link = get_banners_links(data, i)
-    banner_html = get_banner_html_str(data, i)
-
-    valid_links = []
-
-    for link in links:
-        try:
-            _ = link.tag_name
-
-            href = link.get_attribute("href")
-            if not href:
-                print('if not href:')
-                continue
-
-            parsed = urlparse(href)
-
-            if banners_link and href in banners_link:
-                    print('if link.get_attribute("href") in banners_link:')
-                    continue
-
-            if banner_html and href in banner_html:
-                print('if href and banner_html and href in banner_html:')
-                continue
-
-            if not link.is_displayed() or not link.is_enabled() or link.size['width'] <= 0 or link.size['height'] <= 0:
-                print('if not link.is_displayed() or not link.is_enabled() or link.size[\'width\'] <= 0 or link.size[\'height\'] <= 0:')
-                continue
-
-            # Skip invalid links (javascript, mailto, etc.)
-            if not parsed.scheme.startswith("http"):
-                print('if not parsed.scheme.startswith("http"):')
-                continue
-
-            link_domain = parsed.netloc.replace("www.", "")
-
-            # Optional: stay within same site
-            if link_domain != current_domain:
-                print('if link_domain != current_domain:')
-                continue
-
-            target = (link.get_attribute("target") or "").lower()
-            rel = (link.get_attribute("rel") or "").lower()
-            onclick = (link.get_attribute("onclick") or "").lower()
-            href = (link.get_attribute("href") or "").lower()
-
-            # Heuristic: stronger detection of new-tab behavior
-            opens_new_tab = False
-
-            # 1. Explicit HTML intent
-            if target == "_blank":
-                print('if target == "_blank":')
-                opens_new_tab = True
-            # 2. Security attributes commonly tied to new tabs
-            elif any(x in rel for x in ["noopener", "noreferrer"]):
-                print('if any(x in rel for x in ["noopener", "noreferrer"]):')
-                opens_new_tab = True
-            # 3. Inline JS signals
-            elif any(x in onclick for x in ["window.open", "open(", "target='_blank'", 'target="_blank"']):
-                print('if any(x in onclick for x in ["window.open", "open(", "target=\'_blank\'", \'target="_blank"\']):')
-                opens_new_tab = True
-            # 4. Suspicious JS links
-            elif href.startswith("javascript:") and "window.open" in href:
-                print('if href.startswith("javascript:") and "window.open" in href:')
-                opens_new_tab = True
-
-            # skip links that open in new tab
-            if opens_new_tab:
-                continue
-
-            fragment = parsed.fragment.strip().lower()
-            if fragment and fragment != "":
-                print('if fragment is not None:')
-                continue
-
-            path = parsed.path.strip().lower()
-
-            # skip homepage
-            if path in ["", "/"]:
-                print('if path in ["", "/"]:')
-                continue
-
-            clean_path = path.strip("/").lower()
-
-            if clean_path in language_paths:
-                print('if clean_path in language_paths:')
-                continue
-
-            if any(fp in clean_path for fp in forbidden_paths):
-                print("if any(fp in clean_path for fp in forbidden_paths):")
-                continue
-
-            query = parsed.query.strip().lower()
-            if any(fp in query for fp in forbidden_paths):
-                print("if any(fp in query for fp in forbidden_paths):")
-                continue
-        except Exception as ex:
-            with open(log_file, 'a+') as f:
-                print("filter_valid_links_for_strict_navigation Encountered an error in while parsing links for url: " + data.url + " " + traceback.format_exc())
-                print("filter_valid_links_for_strict_navigation Encountered an error in while parsing links for url: " + data.url + " " + traceback.format_exc(), file=f)
-            continue
-
-        valid_links.append(link.get_attribute("href"))
-
-    return valid_links
-
-
-def filter_valid_links_for_loosy_navigation(data, i):
-    links = get_all_links_on_page()
-
-    try:
-        with open("./datadir/test-artifact/1-Starting_Point_0/navigate_to_other_page.txt", 'a+') as f:
-            hrefs_str = "\n".join([link.get_attribute("href") for link in links if link.get_attribute("href")])
-            print(f"filter_valid_links_for_loosy_navigation Found links for url: {data.url}.\n Hrefs\n: {hrefs_str}", file=f)
-    except Exception as ex:
-        pass
-
-    # links in banners
-    banners_link = get_banners_links(data, i)
-    banner_html = get_banner_html_str(data, i)
-
-    valid_links = []
-
-    for link in links:
-        try:
-            _ = link.tag_name
-            
-            href = link.get_attribute("href")
-            if not href:
-                print('if not href:')
-                continue
-
-            parsed = urlparse(href)
-
-            if banners_link and href in banners_link:
-                    print('if link.get_attribute("href") in banners_link:')
-                    continue
-
-            if banner_html and href in banner_html:
-                print('if href and banner_html and href in banner_html:')
-                continue
-
-            if not link.is_displayed() or not link.is_enabled() or link.size['width'] <= 0 or link.size['height'] <= 0:
-                print('if not link.is_displayed() or not link.is_enabled() or link.size[\'width\'] <= 0 or link.size[\'height\'] <= 0:')
-                continue
-
-            # Skip invalid links (javascript, mailto, etc.)
-            if not parsed.scheme.startswith("http"):
-                print('if not parsed.scheme.startswith("http"):')
-                continue
-
-            target = (link.get_attribute("target") or "").lower()
-            rel = (link.get_attribute("rel") or "").lower()
-            onclick = (link.get_attribute("onclick") or "").lower()
-            href = (link.get_attribute("href") or "").lower()
-
-            opens_new_tab = (
-                target == "_blank"
-                or any(x in rel for x in ["noopener", "noreferrer"])
-                or any(x in onclick for x in ["window.open", "open(", "target='_blank'", 'target="_blank"'])
-                or (href.startswith("javascript:") and "window.open" in href)
-            )
-
-            if not opens_new_tab:
-                print('if not opens_new_tab:')
-                continue
-
-            path = parsed.path.strip().lower()
-
-            # skip homepage
-            if path in ["", "/"]:
-                print('if path in ["", "/"]:')
-                continue
-
-            clean_path = path.strip("/").lower()
-
-            if clean_path in language_paths:
-                print('if clean_path in language_paths:')
-                continue
-
-            if any(fp in clean_path for fp in forbidden_paths):
-                print("if any(fp in clean_path for fp in forbidden_paths):")
-                continue
-
-            fragment = parsed.fragment.strip().lower()
-            if any(fp in fragment for fp in forbidden_paths):
-                print("if any(fp in fragment for fp in forbidden_paths):")
-                continue
-
-            query = parsed.query.strip().lower()
-            if any(fp in query for fp in forbidden_paths):
-                print("if any(fp in query for fp in forbidden_paths):")
-                continue
-        except Exception as ex:
-            with open(log_file, 'a+') as f:
-                print("filter_valid_links_for_loosy_navigation Encountered an error in while parsing links for url: " + data.url + " " + traceback.format_exc())
-                print("filter_valid_links_for_loosy_navigation Encountered an error in while parsing links for url: " + data.url + " " + traceback.format_exc(), file=f)
-            continue
-
-        valid_links.append(link.get_attribute("href"))
-
-    return valid_links
 
 
 def get_all_links_on_page():
@@ -2825,83 +1943,6 @@ def get_all_buttons_on_page():
             print("get_all_buttons_on_page Encountered an error in driver.find_elements(By.TAG_NAME, \"button\") for url: " + traceback.format_exc(), file=f)
         return []
 
-
-def filter_valid_links_for_text_copying(data, i):
-    links = get_all_links_on_page()
-
-    try:
-        with open("./datadir/test-artifact/1-Starting_Point_0/navigate_to_other_page.txt", 'a+') as f:
-            hrefs_str = "\n ".join([link.get_attribute("href") for link in links if link.get_attribute("href")])
-            print(f"filter_valid_links_for_text_copying Found links for url: {data.url}.\n Hrefs\n: {hrefs_str}", file=f)
-    except Exception as ex:
-        pass
-
-    # links in banners
-    banners_link = get_banners_links(data, i)
-    banner_html = get_banner_html_str(data, i)
-
-    valid_links = []
-
-    for link in links:
-        try:
-            _ = link.tag_name
-            
-            href = link.get_attribute("href")
-            if not href:
-                print('if not href:')
-                continue
-
-            parsed = urlparse(href)
-
-            if banners_link:
-                if href in banners_link:
-                    print('if link.get_attribute("href") in banners_link:')
-                    continue
-
-            if banner_html and href in banner_html:
-                print('if href and banner_html and href in banner_html:')
-                continue
-
-            if not link.is_displayed() or not link.is_enabled() or link.size['width'] <= 0 or link.size['height'] <= 0:
-                print('if not link.is_displayed() or not link.is_enabled() or link.size[\'width\'] <= 0 or link.size[\'height\'] <= 0:')
-                continue
-
-            path = parsed.path.strip().lower()
-
-            # skip homepage
-            if path in ["", "/"]:
-                print('if path in ["", "/"]:')
-                continue
-
-            clean_path = path.strip("/").lower()
-
-            if clean_path in language_paths:
-                print('if clean_path in language_paths:')
-                continue
-
-            if any(fp in clean_path for fp in forbidden_paths):
-                print("if any(fp in clean_path for fp in forbidden_paths):")
-                continue
-
-            fragment = parsed.fragment.strip().lower()
-            if any(fp in fragment for fp in forbidden_paths):
-                print("if any(fp in fragment for fp in forbidden_paths):")
-                continue
-
-            query = parsed.query.strip().lower()
-            if any(fp in query for fp in forbidden_paths):
-                print("if any(fp in query for fp in forbidden_paths):")
-                continue
-        except Exception as ex:
-            with open(log_file, 'a+') as f:
-                print("filter_valid_links_for_text_copying Encountered an error in while parsing links for url: " + data.url + " " + traceback.format_exc())
-                print("filter_valid_links_for_text_copying Encountered an error in while parsing links for url: " + data.url + " " + traceback.format_exc(), file=f)
-            continue
-
-        valid_links.append(link)
-
-    return valid_links
-
         
 def scroll_atleast_half_page(step = 80):
     global driver
@@ -2937,274 +1978,6 @@ def scroll_atleast_half_page(step = 80):
         return False, "exception"
 
 
-def get_safe_drag_points(page_w, page_h, ex, ey, ew, eh):
-    regions = []
-
-    # Above
-    if ey > 0:
-        regions.append((0, 0, page_w, ey))
-
-    # Below
-    if ey + eh < page_h:
-        regions.append((0, ey + eh, page_w, page_h - (ey + eh)))
-
-    # Left
-    if ex > 0:
-        regions.append((0, ey, ex, eh))
-
-    # Right
-    if ex + ew < page_w:
-        regions.append((ex + ew, ey, page_w - (ex + ew), eh))
-
-    if not regions:
-        raise Exception("No safe region available")
-
-    # Pick ONE region (important: keeps drag path safe)
-    rx, ry, rw, rh = random.choices(
-        regions,
-        weights=[w * h for (_, _, w, h) in regions],
-        k=1
-    )[0]
-
-    def random_point():
-        return (
-            random.randint(rx, rx + rw - 1),
-            random.randint(ry, ry + rh - 1)
-        )
-
-    p1 = random_point()
-    p2 = random_point()
-
-    return p1, p2
-
-
-def get_safe_drag_point(page_w, page_h, ex, ey, ew, eh):
-    regions = []
-
-    # Above
-    if ey > 0:
-        regions.append((0, 0, page_w, ey))
-
-    # Below
-    if ey + eh < page_h:
-        regions.append((0, ey + eh, page_w, page_h - (ey + eh)))
-
-    # Left
-    if ex > 0:
-        regions.append((0, ey, ex, eh))
-
-    # Right
-    if ex + ew < page_w:
-        regions.append((ex + ew, ey, page_w - (ex + ew), eh))
-
-    if not regions:
-        raise Exception("No safe region available")
-
-    # Pick ONE region (important: keeps drag path safe)
-    rx, ry, rw, rh = random.choices(
-        regions,
-        weights=[w * h for (_, _, w, h) in regions],
-        k=1
-    )[0]
-
-    def random_point():
-        return (
-            random.randint(rx, rx + rw - 1),
-            random.randint(ry, ry + rh - 1)
-        )
-
-    p1 = random_point()
-
-    return p1
-
-
-def is_text_selection_possible(data, i):
-    global driver
-    viewport = None
-
-    viewport = get_viewports_height_and_width()
-
-    if not viewport:
-        return False, "exception in get_viewports_height_and_width"
-
-    vw, vh = viewport["width"], viewport["height"]
-
-    bx = data.banners_data[i]['x']
-    by = data.banners_data[i]['y']
-    bw = data.banners_data[i]['w']
-    bh = data.banners_data[i]['h']
-
-    M = 15 # padding
-
-    vw = vw - 2 * M
-    vh = vh - 2 * M
-
-    bx = bx - M
-    by = by - M
-    bw = bw + 2 * M
-    bh = bh + 2 * M
-
-    bx = max(0, bx)
-    by = max(0, by)
-    bw = min(vw - bx, bw)
-    bh = min(vh - by, bh)
-
-    print("get_safe_drag_points inputs for url: " + this_url + f" vw: {vw}, vh: {vh}, bx: {bx}, by: {by}, bw: {bw}, bh: {bh}")
-
-    for _ in range(10):
-        try:
-            (x1, y1), (x2, y2) = get_safe_drag_points(vw, vh, bx, by, bw, bh)
-
-            copied, text = is_text_btw_coords_copied(x1, x2, y1, y2)
-
-            if copied and len(text.split()) > 5:
-                extract_leaf_strings_from_old_banner = extract_full_leaf_strings(data.banners_data[i]['html'])
-                if text in extract_leaf_strings_from_old_banner or text in " ".join(extract_leaf_strings_from_old_banner):
-                    with open(log_file, 'a+') as f:
-                        print(f"Discarding text selection since copied text is part of banner text for url: {this_url}", file=f)
-                        print(f"Discarding text selection since tex: {this_url}")
-                    continue
-
-            if copied:
-                return True, "success"
-        except Exception as ex:
-            with open(log_file, 'a+') as f:
-                print("Encountered an error in get_safe_drag_points for url: " + this_url + " " + traceback.format_exc())
-                print("Encountered an error in get_safe_drag_points for url: " + this_url + " " + traceback.format_exc(), file=f)
-
-    return False, "failed"
-
-
-def copy_text_of_element(element):
-    global driver
-    try:
-        # we have already scrolled before and banner is also not overlapping with it or it with banner per current calling flow of function
-        ew_os = int(element.size["width"]) + 3
-
-        pyperclip.copy("")
-        before = pyperclip.paste().strip()
-
-        # Move to start and click-hold (human-like)
-        # Move to exact starting coordinates
-        actions = ActionChains(driver)
-        actions.move_to_element_with_offset(element, -3, 1).click_and_hold().perform()
-        time.sleep(random.uniform(0.3, 0.8))
-
-        actions.move_to_element_with_offset(element, ew_os, 3).perform()
-        time.sleep(random.uniform(0.3, 0.8))
-        
-        actions.release().perform()
-        time.sleep(random.uniform(0.3, 0.8))
-
-        # COPY selection (no JS used)
-        actions.key_down(Keys.CONTROL).send_keys("c").key_up(Keys.CONTROL).perform()
-        time.sleep(2)
-
-        after = pyperclip.paste().strip()
-
-        try:
-            print(f"try: Text copied: before: {before}, after: {after}")
-        except:
-            print(f"except: Text copied: before: after:")
-            pass
-
-        actions.reset_actions()
-        if after and after != before:
-            with open(log_file, 'a+') as f:
-                print("if after and after != before: for url: " + this_url)
-                print("if after and after != before: for url: " + this_url, file=f)
-                print("after: " + after, file=f)
-            return True, after
-
-        return False, ""
-    except MoveTargetOutOfBoundsException as move_ex:
-        with open(log_file, 'a+') as f:
-            print("MoveTargetOutOfBoundsException Encountered an error in copy_text_of_element for url: " + this_url)
-            print("MoveTargetOutOfBoundsException Encountered an error in copy_text_of_element for url: " + this_url, file=f)
-        return False, ""
-    except Exception as ex:
-        with open(log_file, 'a+') as f:
-            print("Encountered an error in copy_text_of_element for url: " + this_url + " " + traceback.format_exc())
-            print("Encountered an error in copy_text_of_element for url: " + this_url + " " + traceback.format_exc(), file=f)
-        return False, ""
-
-
-def is_text_btw_coords_copied(x1, x2, y1, y2):
-    global driver
-    try:
-        html = driver.find_element(By.TAG_NAME, "html")
-        if not html:
-            html = driver.find_element(By.CSS_SELECTOR, "html")
-
-        actions = ActionChains(driver)
-
-        actions.move_to_element_with_offset(html, 0, 0).perform()
-        time.sleep(random.uniform(0.5, 1))
-
-        pyperclip.copy("")
-        before = pyperclip.paste().strip()
-
-        # Move to start and click-hold (human-like)
-        # Move to exact starting coordinates
-        actions.move_by_offset(x1, y1).click_and_hold().perform()
-        time.sleep(random.uniform(0.5, 1))
-
-        actions.move_by_offset(x2 - x1, y2 - y1).perform()
-        time.sleep(random.uniform(0.5, 1))
-        
-        actions.release().perform()
-        time.sleep(random.uniform(0.5, 1))
-
-        # COPY selection (no JS used)
-        actions.key_down(Keys.CONTROL).send_keys("c").key_up(Keys.CONTROL).perform()
-        time.sleep(0.2)
-
-        after = pyperclip.paste().strip()
-
-        try:
-            print(f"try: Text copied: before: {before}, after: {after}")
-        except:
-            print(f"except: Text copied: before: after:")
-            pass
-
-        if after and after != before:
-            with open(log_file, 'a+') as f:
-                print(f"x1: {x1}, x2: {x2}, y1: {y1}, y2: {y2} for url: " + this_url, file=f)
-                print("if after and after != before: for url: " + this_url)
-                print("if after and after != before: for url: " + this_url, file=f)
-                print("after: " + after, file=f)
-            return True, after
-
-        return False, ""
-    except Exception as ex:
-        with open(log_file, 'a+') as f:
-            print(f"x1: {x1}, x2: {x2}, y1: {y1}, y2: {y2} for url: " + this_url, file=f)
-            print("Encountered an error in is_text_btw_coords_copied for url: " + this_url + " " + traceback.format_exc())
-            print("Encountered an error in is_text_btw_coords_copied for url: " + this_url + " " + traceback.format_exc(), file=f)
-
-        return False, ""
-
-
-def contains_close_button(html: str) -> bool:
-    buttons = extract_tags(html, "button")
-
-    close_keywords = {
-        "close",
-        "exit",
-        "cancel",
-        "quit",
-    }
-
-    for button_html in buttons:
-        lower_html = button_html.lower()
-
-        for word in close_keywords:
-            if word in lower_html:
-                return True
-
-    return False
-
-
 CLOSE_WORDS = [
     "close", "x", "exit", "dismiss", "cancel", "quit",
     "schließen", "verlassen", "verwerfen", "abbrechen", "beenden",
@@ -3220,6 +1993,7 @@ CLOSE_WORDS = [
     "닫기", "종료", "무시", "취소", "종료"
 ]
 ICON_ATTRS = ["src", "href", "xlink:href", "data-src"]
+
 
 def score_close_button_from_html(html: str) -> int:
     global driver
@@ -3327,7 +2101,7 @@ def score_close_button_from_html(html: str) -> int:
         except:
             pass
         
-        print(s_string)
+        # print(s_string)
         
         return s
 
@@ -3395,61 +2169,6 @@ def is_new_ui_area_same_as_old_banner_area(data, i, threshold=0.15):
             print("Encountered an error in is_ui_area_not_same_as_old_banner_area for url: " + data.url + " " + ex)
             print("Encountered an error in is_ui_area_not_same_as_old_banner_area for url: " + data.url + " " + traceback.format_exc(), file=f)
         return False
-
-
-def get_texts_overlapping_region(x, y, w, h):
-    global driver
-
-    script = """
-        const x = arguments[0];
-        const y = arguments[1];
-        const w = arguments[2];
-        const h = arguments[3];
-
-        const target = {
-            left: x,
-            top: y,
-            right: x + w,
-            bottom: y + h
-        };
-
-        function isOverlapping(a, b) {
-            return !(
-                a.right < b.left ||   // a is completely left of b
-                a.left > b.right ||  // a is completely right of b
-                a.bottom < b.top ||  // a is completely above b
-                a.top > b.bottom     // a is completely below b
-            );
-        }
-
-        const elements = Array.from(document.body.querySelectorAll("*"));
-        const results = new Set();
-
-        for (const el of elements) {
-            const rect = el.getBoundingClientRect();
-
-            // Skip invisible or zero-size elements
-            if (rect.width === 0 || rect.height === 0) continue;
-
-            const elRect = {
-                left: rect.left,
-                top: rect.top,
-                right: rect.right,
-                bottom: rect.bottom
-            };
-
-            if (isOverlapping(elRect, target)) {
-                const text = el.innerText?.trim();
-                if (text) {
-                    results.add(text);
-                }
-            }
-        }
-
-        return Array.from(results);
-    """
-
-    return driver.execute_script(script, x, y, w, h)
 
 
 def does_banner_exist(data, i):
@@ -3555,34 +2274,6 @@ def get_root_class_or_id(html: str) -> str:
     return None
 
 
-def get_element_z_index_and_position(data, locator_type, locator_value):
-    global driver
-    try:
-        element = driver.find_element(locator_type, locator_value)
-
-        pointer_events = driver.execute_script(
-            "return window.getComputedStyle(arguments[0]).pointerEvents;", element
-        )
-
-        # Get computed styles via JavaScript
-        z_index = driver.execute_script(
-            "return window.getComputedStyle(arguments[0]).zIndex;", element
-        )
-
-        position = driver.execute_script(
-            "return window.getComputedStyle(arguments[0]).position;", element
-        )
-
-        print(f"z_index: {z_index}, position: {position}, pointer_events: {pointer_events} for url: {data.url}")
-
-        return z_index, position, pointer_events
-    except Exception as ex:
-        with open(log_file, 'a+') as f:
-            print("Encountered an error in get_element_z_index_and_position for url: " + data.url + " " + traceback.format_exc())
-            print("Encountered an error in get_element_z_index_and_position for url: " + data.url + " " + traceback.format_exc(), file=f)
-        return None, None, None
-
-
 def is_element_not_visible(data, locator_type, locator_value):
     global driver
     try:
@@ -3660,31 +2351,10 @@ def check_if_element_not_visible(data, i):
         return None, None
 
 
-def detect_z_index_and_position_on_html_layout(data, i):
-    try:
-        banners = detect_banners(data, running_for_category_detection=True)
-        banners_data = extract_banners_data(banners)
-
-        if i >= len(banners_data):
-            return None, None, None
-
-        root_locator = get_root_class_or_id(banners_data[i]['html'])
-        print(f"Root locator for banner {i} for url {data.url}: {root_locator}")
-        z_index, position, pointer_events = get_element_z_index_and_position(data, By.CSS_SELECTOR, root_locator) if root_locator else (None, None, None)
-
-        return z_index, position, pointer_events
-    except Exception as ex:
-        with open(log_file, 'a+') as f:
-            print("Encountered an error in detect_z_index_and_position_on_html_layout for url: " + data.url + " " + traceback.format_exc())
-            print("Encountered an error in detect_z_index_and_position_on_html_layout for url: " + data.url + " " + traceback.format_exc(), file=f)
-        return None, None, None
-
-
 URL_REGEX = re.compile(
     r'https?://[^\s"\'<>]+|www\.[^\s"\'<>]+',
     re.IGNORECASE
 )
-
 ATTRIBUTES_TO_CHECK = [
     "href", "src", "action", "formaction",
     "data-url", "data-href", "data-src",
