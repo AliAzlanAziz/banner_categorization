@@ -1,7 +1,8 @@
 *venv*
 *datadir*
+*screenshots*
 
 __pycache__
 .vscode
 /*.csv
-/*.txt
+/*banner*.txt
