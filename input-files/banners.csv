@@ -1,3 +1,4 @@
+Domain,Banner Type,Position of banner (Desktop),Buttons Text,Links Text,,
 google.com,Blocking banner,Center,"Reject all, Accept all, More options","Privacy, Terms, Cookie/s, Misc",,
 mail.ru,Floating non blocking banner stays until action,Bottom right,"Settings, Accept all","Privacy notice, Misc",,
 microsoft.com,Static non blocking banner stays until action,Top Bar,"Accept, Reject, Manage cookies","Privacy Policy, Third Party Cookies",,

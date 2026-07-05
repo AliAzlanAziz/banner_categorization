@@ -1,4 +1,4 @@
-### Setup the script
+### Setup the banner categorization script
 
 - install conda@26.1.1 <br>
 - install Python 3.9.19 <br>
@@ -14,10 +14,16 @@ Must have firefox installed alongside the geckodriver, if some error occur in re
 
 In config.py, set the following variables per desired goal:
 
-urls_file = "simple_non_blocking_banner.csv" # set this variable to the csv placed in input file, the first column must contain domains, remaining all will be ignored
+urls_file = "static_non_blocking_banner_stays_until_action.csv" # set this variable to the csv placed in input file, the first column must contain domains, remaining all will be ignored
 
 XXX <br>
 The output file that contains the domain and category will named exactly as the input file name but it will be in the root directory (not inside input-files folder). <br>
 For data like screenshot, there will be an output folder with name as of input file name but with -datadir appended in its name.
+
+### Setup the banner sub-categorization script (close button presence)
+- you must have already ran the banner_detection.py earlier and therefore must have xyz-datadir folder (where the screenshots are)
+- adjust the BASE_NAMES array in the script update_closing_score.py (BASE_NAMES means the xyz part of the xyz-datadir folder)
+- you might need to adjut base_url of LLM server and the LLM model itself in the script update_closing_score.py (I setup the LLM server on my other PC with LMStudio that let run any LLM given GPU supports it and let it expose locally on the server)
+- then simply run: python update_closing_score.py
 
 #### For my supervisors: contact me any time at my email to set it up on your system for testing or any purpose in case of any error, I will set it up quickly.

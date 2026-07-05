@@ -748,3 +748,4 @@ tencent.com,floating non blocking banner stays until action (close option given)
 rackspace.com,floating non blocking banner stays until action (close option given),bottom right,"accept all cookies, reject all, cookies settings",Rackspace Technology Cookie Notice,,
 mixpanel.com,floating non blocking banner stays until action (close option given),bottom right,"accept, decline",Privacy Policy,,
 zoom.com,floating non blocking banner stays until action (close option given),center,"accept cookies, decline cookies, cookies settings",,,
+domain,banner type,position of banner (desktop),buttons text,Links Text,,
