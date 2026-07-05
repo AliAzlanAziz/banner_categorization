@@ -51,16 +51,16 @@ CHOICE = 0     # interact_mode: 0. no interaction, 1. accept, 2. reject
 # urls_file = "blocking_banner_with_option_to_close.csv"
 # urls_file = "static_non_blocking_banner_stays_until_action.csv"
 # urls_file = "floating_non_blocking_banner_stays_until_action_close_option_given.csv"
-urls_file = "floating_non_blocking_banner_stays_until_action.csv"
-# urls_file = "undetected_banners.csv"
-# urls_file = "simple_non_blocking_banner.csv"
+# urls_file = "floating_non_blocking_banner_stays_until_action.csv"
+# urls_file = "no_unknown_banner.csv"
+urls_file = "simple_non_blocking_banner.csv"
 # urls_file = "banners_sorted_exist.csv"
 # urls_file = "testing.csv"
 # urls_file = "testing_all_floating.csv"
 # urls_file = "no_banner.csv"
 # urls_file = "retest_wrong.csv"
 
-run_name = "test-artifact"
+run_name = ""
 
 # directories path
 season_dir = "./" + urls_file.split(".")[0] + "-datadir/" + run_name + "/" # ./datadir/test-artifact/
