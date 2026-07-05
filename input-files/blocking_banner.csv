@@ -1,101 +1,68 @@
-google.com,blocking banner,center,"reject all, accept all, more options","Privacy, Terms, Cookie/s, Misc",,
-facebook.com,blocking banner,center,"decline optional cookies, accept all cookies","Cookies Policy, other companies, Misc",Choose cookies by category,
-youtube.com,blocking banner,center,"reject all, accept all, more options","Privacy Policy, Terms of Service, Cookie/s, Misc",,
-instagram.com,blocking banner,center,"decline optional cookies, accept all cookies","Cookies Policy, other companies, Misc",Choose cookies by category,
-fbcdn.net,blocking banner,center,"decline optional cookies, accept all cookies","Cookies Policy, other companies, Misc",Choose cookies by category,
-googlevideo.com,blocking banner,center,"reject all, accept all, more options","Privacy, Terms, Cookie/s, Misc",,
-youtu.be,blocking banner,center,"reject all, accept all, more options","Privacy Policy, Terms of Service, Cookie/s, Misc",,
-yahoo.com,blocking banner,center,"accept all, reject all, manage privacy settings","our partners, Privacy Policy, our Cookie Policy",,
-googlesyndication.com,blocking banner,center,"reject all, accept all, more options","Privacy, Terms, Cookie/s, Misc",,
-samsung.com,blocking banner,center,"accept all cookies, only accept necessary cookies, settings","Cookie Notices, Privacy Policy",,
-nginx.com,blocking banner,center,"count me in, no thanks, customize settings",Privacy Policy,,
-criteo.com,blocking banner,bottom bar,"accept all, deny","Privacy Policy, More Information ",,
-one.one,blocking banner,center,"accept all, only necessary",Show details,,
-telekom.de,blocking banner,center,"accept all, only required, settings","privacy statement, Privacy Policy, Imprint, Partner list",,
-tumblr.com,blocking banner,center,"i agree, learn more",,,
-f5.com,blocking banner,center,"count me in, no thanks, customize settings",Privacy Policy,,
-nytimes.com,blocking banner,bottom bar,"accept all, reject all, manage preferences","Cookie Policy, Privacy Policy, Misc",,
-flickr.com,blocking banner,center,"accept all, reject all, submit preferences, manage settings, required cookies, functional cookies, advertising cookies, purposes, our partners",Privacy Policy,,
-avast.com,blocking banner,center,"ok, reject all, manage",Cookie Policy,,
-theguardian.com,blocking banner,center,"accept all, reject all and subscribe","privacy policy, cookie policy, partners, misc",,
-forbes.com,blocking banner,bottom bar,"accept all, reject all, manage preferences",Privacy Statement,,
-bbc.com,blocking banner,center,"i agree, i do not agree, manage options","partners, privacy policy",,
-bbc.co.uk,blocking banner,center,"i agree, i do not agree, manage options","partners, privacy policy",,
-oracle.com,blocking banner,center,"accept all, decline all, view and change cookie preferences","our third party partners, privacy policy",,
-sourceforge.net,blocking banner,center,"i accept, i do not accept","Third party, More options, Privacy Policy",,
-researchgate.net,blocking banner,bottom bar,"accept, reject, customize","Partners, Privacy Policy",,
-sciencedirect.com,blocking banner,bottom bar,"accept all cookies, accept only necessary cookies, cookie settings","Cookie settings, Cookie Policy",,
-weather.com,blocking banner,bottom right,"accept all, reject all, manage cookie settings","Privacy Policy, Learn more",,
-cpanel.net,blocking banner,center,"accept all, deny","Privacy Policy, Legal Notice, More Information ",,
-gmail.com,blocking banner,center,"reject all, accept all, more options","Privacy, Terms, Cookie/s, Misc",,
-doubleverify.com,blocking banner,center,"agree and proceed, required only, view cookie settings",Cookie Notice,,
-salesforce.com,blocking banner,center,"accept all cookies, do no accept, cookie consent manager",Privacy Statement,,
-hp.com,blocking banner,center,"accept all cookies, reject all cookies","your information (the information we collect), cookie settings, learn more",,
-inmobi.com,blocking banner,bottom bar,"accept all, decline, customize",cookie policy,,
-tinyurl.com,blocking banner,bottom right,"allow all cookies, allow only necessary",Cookie policy,,
-samsungcloud.com,blocking banner,bottom bar,"accept all cookies, continue without accepting, manage cookies","Privacy policy, Cookies",,
-appsflyer.com,blocking banner,center,"accept all cookies, reject all cookies, customize",Cookie policy,,
-springer.com,blocking banner,bottom bar,"accept all cookies, reject optional cookies, manage preferences","Partners, Privacy Policy",,
-etsy.com,blocking banner,center,"accept all cookies, essential cookies only, update settings",Cookie Policy,,
-nature.com,blocking banner,bottom bar,"accept all cookies, reject optional cookies, manage preferences","partners, privacy policy",,
-wsj.com,blocking banner,bottom bar,"""yes, i agree"", manage settings",Partners,,
-dailymail.co.uk,blocking banner,bottom bar,"accept, reject and purchase daily mail essential","Partners, Privacy Policy, Privacy Settings",,
-telekom.net,blocking banner,center,"accept all, only required, settings","Privacy Policy, Imprint, Partner list",,
-businessinsider.com,blocking banner,center,"accept all, ad-free for 3.99 € / month, settings","Privacy Policy, misc",,
-bloomberg.com,blocking banner,center,"""yes, i accept"", ""no, i do not accept"", manage cookies","third party partners, Privacy Policy, right to object ",,
-dailymotion.com,blocking banner,center,"accept, personalise, continue without accepting","non-IAB Partners, IAB Partners, Selected Commercial Partners, Terms of Use, Privacy, Cookie ",,
-telegraph.co.uk,blocking banner,center,"i accept, essential cookies only, manage",misc,,
-3lift.com,blocking banner,bottom bar,"accept all, deny all, save settings, more information, personalised advertising, website functionality, analytics, personalised content","Privacy Notice, Cookie Notice",,
-temu.com,blocking banner,bottom bar,"accept all, reject all",,"Customise cookies, Cookies and Similar Technologies policy",
-plesk.com,blocking banner,center,"accept all, deny, more information","Privacy Policy, Legal Notice",,
-t-online.de,blocking banner,center,,,,
-google.com.br,blocking banner,center,"reject all, accept all, more options","Privacy, Terms, Cookie/s, Misc",,
-trustpilot.com,blocking banner,center,"accept all, reject all, manage cookies",Cookie Policy,,
-staples.com,blocking banner,center,"consent, manage options",List of partners,,
-aol.com,blocking banner,center,"accept all, reject all, manage privacy settings","our partners, Privacy Policy, Cookie Policy",,
-statista.com,blocking banner,center,"accept all, adjust settings, reject optional cookies, list of partners (vendors)",Privacy Statement,,
-hostgator.com,blocking banner,center,"got it, reject all, cookies settings","Terms of Use,  Privacy Policy, Cookie Notice",,
-zendesk.com,blocking banner,center,"accept all, reject all, cookie settings",Cookie Policy,,
-g.page,blocking banner,center,"reject all, accept all, more options","Privacy, Terms, Cookie/s, misc",,
-google.de,blocking banner,center,"reject all, accept all, more options","Privacy, Terms, Cookie/s, Misc",,
-mysql.com,blocking banner,center,"accept all, decline all, view and change cookie preferences","our third party partners, privacy policy",,
-independent.co.uk,blocking banner,bottom bar,"i accept, essential cookies only, show purposes","partners, Privacy Policy",,
-wired.com,blocking banner,center,"i accept, your privacy choices","Privacy Policy, misc",,
-indiatimes.com,blocking banner,center,"consent, manage options",,,
-onelink.me,blocking banner,center,"accept all cookies, reject all cookies, customize",cookies policy,,
-ft.com,blocking banner,center,"accept, reject, manage cookies","technology partners, cookie policy",,
-xhamster.com,blocking banner,center,"accept, reject","Manage cookies, Cookie Policy, Privacy Policy, misc",,
-supercell.com,blocking banner,center,"accept all cookies, necessary cookies, manage cookies",Learn more,,
-mulesoft.com,blocking banner,center,"accept all cookies, do not accept",Privacy Statement,,
-sharethrough.com,blocking banner,bottom bar,"agree and proceed, reject all, manage options",misc,,
-hotjar.com,blocking banner,bottom bar,"accept, reject all, cookie settings",Cookie Policy,,
-force.com,blocking banner,center,"allow all cookies, do not accept, cookie consent manager",Privacy Statement,,
-accuweather.com,blocking banner,bottom left,"consent, do not consent, manage options",Privacy Policy,,
-free.fr,blocking banner,center,"agree and close, disagree and close, learn more",View our partners,,
-surveymonkey.com,blocking banner,center,"accept all, reject all, customise","Privacy Notice, Cookies Notice",,
-imgur.com,blocking banner,center,"consent, manage options",List of partners,,
-oraclecloud.com,blocking banner,center,"accept all, decline all, view and change cookie preferences","our third party partners, privacy policy",,
-fandom.com,blocking banner,bottom bar,"i accept, show purposes, list of partners (vendors)",,,
-redhat.com,blocking banner,center,"agree and proceed with standard settings, proceed with required cookies only, view cookie preferences",Privacy Statement,,
-marriott.com,blocking banner,center,"accept all, reject all, cookies settings",,,
-nike.com,blocking banner,center,"accept all, reject all, confirm selection",Privacy and Cookie Policy,,
-google.com.hk,blocking banner,center,"reject all, accept all, more options","Privacy, Terms, Cookie/s, Misc",,
-cbsnews.com,blocking banner,bottom left,"accept, reject, manage",Privacy Policy,,
-elpais.com,blocking banner,top bar,"accept, configuration, our partners, view our 976 partners",,,
-bluehost.com,blocking banner,center,"got it, reject all, cookies settings","Terms of Use,  Privacy Policy, Cookie Notice",,
-outbrain.com,blocking banner,center,"accept cookies, reject all, cookies settings",Outbrain’s Privacy Policy,,
-nbcnews.com,blocking banner,bottom bar,continue,Cookie Policy,,
-google.co.uk,blocking banner,center,"accept all, reject all, more options","Privacy, Terms, Cookie/s, Misc",,
-withgoogle.com,blocking banner,center,"reject all, accept all, more options","Privacy, Terms, Cookie/s, Misc",,
-techcrunch.com,blocking banner,center,"consent, do not consent, manage options, learn more",List of partners,,
-xvideos.com,blocking banner,center,"accept all cookies, reject all cookies, manage cookies",Cookie Policy,,
-wp.pl,blocking banner,bottom bar,"i accept and go to the service, i reject and i want to know more, trusted partners of iab, the advanced settings, trusted partners iab","Trusted Partners, misc",,
-spiegel.de,blocking banner,center,"consent and continue, subscribe now, preferences","privacy policy, Privacy Center, third party providers, Imprint, Privacy Policy, General Terms and Conditions, misc",,
-lemonde.fr,blocking banner,center,"accept and continue, subscribe, partners, what are cookies used for, why the world is asking you to accept these data processing ",misc,,
-lenovo.com,blocking banner,center,"accept cookies, ""no, thank you, only necessary cookies"", cookie settings, cookie consent tool",Privacy Policy,,
-fb.com,blocking banner,center,"decline optional cookies, accept all cookies","Cookies Policy, other companies, Misc",Choose cookies by category,
-palmplaystore.com,blocking banner,center,"consent, do not consent, manage options, learn more",List of partners,,
-bugsnag.com,blocking banner,center,"accept cookies, cookie settings",Learn more,,
-sagepub.com,blocking banner,center,"accept non-essential cookies, reject non-essential cookies, manage cookies","Privacy Policy, Cookie Policy",,
-gumgum.com,blocking banner,bottom bar,"accept, manage preferences",View Full Policy,,
-allaboutcookies.org,blocking banner,center,"accept, cookie settings, partners/vendors",,,
+google.com,false
+facebook.com,false
+youtube.com,false
+instagram.com,false
+fbcdn.net,false
+googlevideo.com,false
+youtu.be,false
+yahoo.com,false
+googlesyndication.com,false
+criteo.com,false
+tumblr.com,false
+theguardian.com,false
+bbc.com,false
+bbc.co.uk,false
+sourceforge.net,false
+sciencedirect.com,false
+weather.com,false
+cpanel.net,false
+salesforce.com,false
+hp.com,false
+tinyurl.com,false
+samsungcloud.com,false
+appsflyer.com,false
+springer.com,false
+nature.com,false
+dailymail.co.uk,false
+telekom.net,false
+bloomberg.com,false
+3lift.com,false
+plesk.com,false
+t-online.de,false
+google.com.br,false
+staples.com,false
+aol.com,false
+statista.com,false
+hostgator.com,false
+zendesk.com,false
+g.page,false
+google.de,false
+independent.co.uk,false
+indiatimes.com,false
+onelink.me,false
+ft.com,false
+supercell.com,false
+mulesoft.com,false
+hotjar.com,false
+force.com,false
+accuweather.com,false
+free.fr,false
+imgur.com,false
+fandom.com,false
+redhat.com,false
+marriott.com,false
+google.com.hk,false
+cbsnews.com,false
+bluehost.com,false
+outbrain.com,false
+nbcnews.com,false
+google.co.uk,false
+withgoogle.com,false
+techcrunch.com,false
+wp.pl,false
+spiegel.de,false
+fb.com,false
+palmplaystore.com,false
+sagepub.com,false
+gumgum.com,false
+allaboutcookies.org,false

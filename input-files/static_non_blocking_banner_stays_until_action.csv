@@ -1,17 +1,17 @@
-microsoft.com,static non blocking banner stays until action,top bar,"accept, reject, manage cookies","Privacy Policy, Third Party Cookies",,
-office.com,static non blocking banner stays until action,top bar,"accept, reject, manage cookies","Privacy Statement, Third-Party Cookies",,
-live.com,static non blocking banner stays until action,top bar,"accept, reject, manage cookies","Privacy Statement, Third-Party Cookies",,
-linkedin.com,static non blocking banner stays until action,top bar,"accept, reject","Cookies Policy, settings",,
-azure.com,static non blocking banner stays until action,top bar,"accept, reject, manage cookies","Privacy Statement, Third-Party Cookies",,
-sharepoint.com,static non blocking banner stays until action,top bar,"accept, reject, manage cookies","Privacy Policy, Third Party Cookies",,
-windows.net,static non blocking banner stays until action,top bar,"accept, reject, manage cookies","Privacy Statement, Third-Party Cookies",,
-office365.com,static non blocking banner stays until action,top bar,"accept, reject, manage cookies","Privacy Policy, Third Party Cookies",,
-windows.com,static non blocking banner stays until action,top bar,"accept, reject, manage cookies","Privacy Statement, Third-Party Cookies",,
-cloud.microsoft,static non blocking banner stays until action,top bar,"accept, reject, manage cookies","Privacy Statement, Third-Party Cookies",,
-outlook.com,static non blocking banner stays until action,top bar,"accept, reject, manage cookies","Privacy Statement, Third-Party Cookies",,
-static.microsoft,static non blocking banner stays until action,top bar,"accept, reject, manage cookies","Privacy Policy, Third Party Cookies",,
-www.gov.uk,static non blocking banner stays until action,top bar,"accept additional cookies, reject additional cookies",View cookies,,
-xboxlive.com,static non blocking banner stays until action,top bar,"accept, reject, manage cookies","Privacy Policy, Third Party Cookies",,
-gamepass.com,static non blocking banner stays until action,top bar,"accept, reject, manage cookies","Privacy Policy, Third Party Cookies",,
-visualstudio.com,static non blocking banner stays until action,top bar,"accept, reject, manage cookies","Privacy Statement, Third-Party Cookies",,
-service.gov.uk,static non blocking banner stays until action,top bar,"accept additional cookies, reject additional cookies",View cookies,,
+microsoft.com,false
+office.com,false
+live.com,false
+linkedin.com,false
+azure.com,false
+sharepoint.com,
+windows.net,false
+office365.com,false
+windows.com,false
+cloud.microsoft,false
+outlook.com,false
+static.microsoft,
+www.gov.uk,false
+xboxlive.com,false
+gamepass.com,false
+visualstudio.com,false
+service.gov.uk,false

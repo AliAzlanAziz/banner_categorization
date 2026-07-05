@@ -1,56 +1,50 @@
-netflix.com,floating non blocking banner stays until action (close option given),center,"accept, reject, learn more",cookies and similar technologies,,
-chatgpt.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all, reject non-essential, manage cookies","Manage Cookies, Cookie Policy ",,
-zoom.us,floating non blocking banner stays until action (close option given),center,"accept cookies, decline cookies, cookies settings",Privacy Statement,,
-opera.com,floating non blocking banner stays until action (close option given),bottom left,"accept all, accept selection, necessary cookies, marketing cookies, analytics cookies","Advertising and personalization, Privacy Statement, Cookie Policy ",,
-bit.ly,floating non blocking banner stays until action (close option given),bottom bar,"accept all, cookie settings","Cookie Policy, Privacy Policy",,
-ui.com,floating non blocking banner stays until action (close option given),bottom left,"accept all cookies, cookies settings",,,
-unity3d.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all cookies, reject all, cookie settings",,,
-paypal.com,floating non blocking banner stays until action (close option given),bottom bar,"accept, reject",Manage cookies and learn more,,
-discord.gg,floating non blocking banner stays until action (close option given),bottom bar,"accept all cookies, reject all cookies, cookies settings",Privacy Notice,,
-applovin.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all cookies, reject all, cookies settings",,,
-discord.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all cookies, reject all cookies, cookies settings",Privacy Notice,,
-godaddy.com,floating non blocking banner stays until action (close option given),bottom bar,"accept, reject, manage",Privacy Policy,,
-vungle.com,floating non blocking banner stays until action (close option given),bottom bar,"accept, deny",Cookie Policy,,
-pubmatic.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all, reject all, customize settings",Privacy Policy,,
-ebay.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all, decline all, customise my choices","Cookie Notice, third-party companies",,
-casalemedia.com,floating non blocking banner stays until action (close option given),bottom right,"accept cookies, reject all, your privacy choices","privacy policy, cookie notice",,
-forter.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all cookies, reject all, cookie settings",,,
-ampproject.org,floating non blocking banner stays until action (close option given),bottom right,got it,"use of cookies, privacy policy",,
-googleblog.com,floating non blocking banner stays until action (close option given),bottom bar,,Learn more,,
-ivi.ru,floating non blocking banner stays until action (close option given),bottom bar,agree,"cookies, privacy policy, misc",,
-crashlytics.com,floating non blocking banner stays until action (close option given),bottom bar,,Learn more,,
-checkpoint.com,floating non blocking banner stays until action (close option given),bottom bar,"accept, reject all, cookie settings","Privacy Policy, Cookie Notice",,
-netflix.net,floating non blocking banner stays until action (close option given),top bar,"accept, reject, learn more",cookies and similar technologies ,,
-afternic.com,floating non blocking banner stays until action (close option given),bottom bar,"accept, decline, manage",Privacy Policy,,
-vivoglobal.com,floating non blocking banner stays until action (close option given),bottom bar,,"Cookie Policy, Privacy Policy",,
-aliexpress.com,floating non blocking banner stays until action (close option given),bottom bar,"accept cookies, reject cookies, personalize cookies","Cookie settings, Cookie Notice",,Later text instead of cross or close to close banner
-unsplash.com,floating non blocking banner stays until action (close option given),bottom right,"accept all cookies, accept essential only","Cookie Policy, Manage cookies",,
-cookiedatabase.org,floating non blocking banner stays until action (close option given),bottom right,"accept, deny, view preferences","Manage services, Cookie policy, Privacy Statement",,
-branch.io,floating non blocking banner stays until action (close option given),bottom bar,"accept all cookies, reject all, cookies settings",,,
-quora.com,floating non blocking banner stays until action (close option given),bottom right,"i accept, reject all, cookie settings, list of partners (vendors)",,,
-pixabay.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all cookies, reject all, cookies settings",,,
-okta.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all cookies, reject all cookies, cookies settings",privacy policy,,
-nflxvideo.net,floating non blocking banner stays until action (close option given),center,"accept, reject, learn more",cookies and similar technologies,,
-paloaltonetworks.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all, reject all, cookie settings",Privacy Statement,,
-name.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all, reject all, preferences",Privacy Policy,,
-docker.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all cookies, reject all, cookies settings",,,
-2gis.com,floating non blocking banner stays until action (close option given),bottom bar,,Learn more,,
-markmonitor.com,floating non blocking banner stays until action (close option given),bottom bar,"got it, cookie settings","Terms of Use, Privacy Policy, Cookie Notice",,
-wix.com,floating non blocking banner stays until action (close option given),bottom bar,"accept, decline all, advanced",Cookie policy,,
-atlassian.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all cookies, reject all cookies, manage preferences",Atlassian Cookies and Tracking Notice,,
-atlassian.net,floating non blocking banner stays until action (close option given),bottom bar,"accept all cookies, reject all cookies, manage preferences",Atlassian Cookies and Tracking Notice,,
-intercom.io,floating non blocking banner stays until action (close option given),bottom left,"accept all, reject all, manage your cookies",Cookie Policy,,
-nic.network,floating non blocking banner stays until action (close option given),bottom bar,"accept all, reject all, preferences",Privacy Policy,,
-dreamhost.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all, reject all, cookies settings",Privacy Policy,,
-viber.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all cookies, reject all cookies, cookies settings",Cookie Policy,,
-pendo.io,floating non blocking banner stays until action (close option given),bottom bar,"accept all cookies, manage preferences",,,
-unesco.org,floating non blocking banner stays until action (close option given),bottom bar,,our privacy notice,,
-cambridge.org,floating non blocking banner stays until action (close option given),bottom bar,"accept all cookies, reject all, cookie settings",Cookie notice,,
-anydesk.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all, reject all, customize",Further information can be found in our Privacy Policy,,
-liftoff.io,floating non blocking banner stays until action (close option given),bottom bar,"accept, deny",Cookie Policy,,
-mediafire.com,floating non blocking banner stays until action (close option given),bottom bar,i accept,,,
-kontur.ru,floating non blocking banner stays until action (close option given),bottom left,understandable,In more detail,,
-tencent.com,floating non blocking banner stays until action (close option given),bottom bar,"accept all analytics cookies, reject all analytics cookies",misc,,
-rackspace.com,floating non blocking banner stays until action (close option given),bottom right,"accept all cookies, reject all, cookies settings",Rackspace Technology Cookie Notice,,
-mixpanel.com,floating non blocking banner stays until action (close option given),bottom right,"accept, decline",Privacy Policy,,
-zoom.com,floating non blocking banner stays until action (close option given),center,"accept cookies, decline cookies, cookies settings",,,
+netflix.com,true
+chatgpt.com,true
+zoom.us,true
+opera.com,
+ui.com,true
+unity3d.com,true
+paypal.com,true
+discord.gg,true
+applovin.com,true
+discord.com,true
+pubmatic.com,true
+ebay.com,true
+casalemedia.com,true
+ampproject.org,true
+googleblog.com,true
+ivi.ru,true
+crashlytics.com,true
+netflix.net,true
+aliexpress.com,true
+unsplash.com,true
+cookiedatabase.org,true
+branch.io,true
+quora.com,true
+pixabay.com,true
+paloaltonetworks.com,true
+docker.com,true
+2gis.com,true
+wix.com,true
+atlassian.com,true
+atlassian.net,true
+intercom.io,true
+dreamhost.com,true
+viber.com,true
+pendo.io,true
+unesco.org,true
+cambridge.org,true
+anydesk.com,true
+liftoff.io,true
+mediafire.com,true
+kontur.ru,true
+tencent.com,
+rackspace.com,true
+mixpanel.com,false
+zoom.com,true
+doubleclick.net,true
+google-analytics.com,true
+dropbox.com,true
+b-cdn.net,true
+adtrafficquality.google,true
+android.com,true
