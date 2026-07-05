@@ -920,9 +920,6 @@ def run_all_pc():  # this function is used for run the banner detection module o
     driver_ref["driver"] = driver
 
     for domain in domains:
-        tab_restart_browser(driver)
-        print("step: ", step, " domain: ", domain)
-
         driver_ref["done"] = False
         driver_ref["restart"] = False
 
@@ -997,14 +994,12 @@ def run_all_for_domains(DMN, URL):
         Data.start_time = datetime.now()
 
         if BANNERCLICK:
-            banners = run_banner_detection(Data)
-
-            Data.banners = banners
-            Data.banners_data = extract_banners_data(banners)
+            Data.banners = run_banner_detection(Data)
+            Data.banners_data = extract_banners_data(Data.banners)
 
             detect_banner_category_start_time = time.perf_counter()
 
-            if len(banners) > 0:
+            if len(Data.banners) > 0:
                 # clear all data, start new tab and navigate to the domain again and dismiss alert if there
                 try:
                     # self.clear_data_and_get_site(webdriver)
@@ -1163,29 +1158,20 @@ def detect_banner_category(data, i):
             except Exception as ex:
                 with open(log_file, 'a+') as f:
                     print("page might not have loaded completely for : " + this_url + " in interact with banner. " + traceback.format_exc(), file=f)
-        time.sleep(5)
 
         try:
-            if user_detected_as_bot(driver):
-                return False, False, False, False, False, False, "BOT DETECTED", "BOT DETECTED", -1
-            # all the code and the related function calls marked under <> is subject to remove per next weekly
-            # meeting discussion 
-
             # Step: Send Escape key to attempt to close any simple non-blocking banners
             print("Sending Escape key to attempt to close any simple non-blocking banners")
             ActionChains(driver).send_keys(Keys.ESCAPE).perform()
-            ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(3, 6)).perform()
-            ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(3, 6)).perform()
+            ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(1, 2.5)).perform()
+            ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(1, 2.5)).perform()
             ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(0.5, 1.5)).perform()
             ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(0.5, 1.5)).perform()
             
-            if user_detected_as_bot(driver):
-                return False, False, False, False, False, False, "BOT DETECTED", "BOT DETECTED", -1
-
             # If banner was closed by Escape, it is likely a simple non-blocking banner. 
             if not is_new_ui_area_same_as_old_banner_area(data, i) and not does_banner_exist(data, i):
                 banner_closed = True
-                banner_category = "Simple non blocking banner"
+                banner_category = "Simple banner"
                 closing_score = score_close_button_from_html(data.banners_data[i]["html"])
                 data.category = banner_category
                 branch = "if not is_new_ui_area_same_as_old_banner_area(data, i) and not does_banner_exist(data, i): driver.find_element('tag name', 'html').send_keys(Keys.ESCAPE)"
@@ -1194,20 +1180,12 @@ def detect_banner_category(data, i):
 
                 return banner_closed, is_navigated, is_scrolled, is_text_selected, clicked, url_changed, banner_category, branch, closing_score
 
-            
-            # # Step: Check if banner is a static one, static banners remain present in dom but hides when page is scrolled down
-            is_scrolled, reason_is_scrolled = scroll_atleast_half_page() # two cases of reason fully scrolled and partially scrolled
-            if is_scrolled and reason_is_scrolled != "fully scrolled":
-                print(f"Page did not scrolled fully down via mouse scroll so scrolling via keyboard now")
-                scroll_to_bottom()
-
-            if user_detected_as_bot(driver):
-                return False, False, False, False, False, False, "BOT DETECTED", "BOT DETECTED", -1
+            scroll_to_bottom()
 
             time.sleep(3)
             if not is_new_ui_area_same_as_old_banner_area(data, i) and does_banner_exist(data, i):
                 banner_closed = True
-                banner_category = "static banner"
+                banner_category = "Static banner"
                 closing_score = score_close_button_from_html(data.banners_data[i]["html"])
                 data.category = banner_category
                 branch = "if not is_new_ui_area_same_as_old_banner_area(data, i) and does_banner_exist(data, i):"
@@ -1220,19 +1198,13 @@ def detect_banner_category(data, i):
             # Step: Select a link via TAB, if a non cookie banner link is selected banner is floating else it is blocking
             tabbed, reason_tabbed = tab_to_select_link_in_banner(data, i)
             if tabbed:
-                if user_detected_as_bot(driver):
-                    return False, False, False, False, False, False, "BOT DETECTED", "BOT DETECTED", -1
-                
                 # Step: Scroll at least half page down or full and check if banner is still there
                 # two cases of reason fully scrolled and partially scrolled
-                is_scrolled, reason_is_scrolled = scroll_atleast_half_page()
-                if is_scrolled and reason_is_scrolled != "fully scrolled":
-                    print(f"Page did not scrolled fully down via mouse scroll so scrolling via keyboard now")
-                    scroll_to_bottom()
+                scroll_to_bottom()
 
                 if is_new_ui_area_same_as_old_banner_area(data, i):
                     banner_closed = False
-                    banner_category = "floating banner"
+                    banner_category = "Fixed banner"
                     closing_score = score_close_button_from_html(data.banners_data[i]["html"])
                     data.category = banner_category
                     branch = "if tabbed: if is_new_ui_area_same_as_old_banner_area(data, i):"
@@ -1242,7 +1214,7 @@ def detect_banner_category(data, i):
                     return banner_closed, is_navigated, is_scrolled, is_text_selected, clicked, url_changed, banner_category, branch, closing_score
                 else:
                     banner_closed = True
-                    banner_category = "static banner"
+                    banner_category = "Static banner"
                     closing_score = score_close_button_from_html(data.banners_data[i]["html"])
                     data.category = banner_category
                     branch = "if tabbed: else:"
@@ -1253,7 +1225,7 @@ def detect_banner_category(data, i):
             else:
                 # blocking banner
                 banner_closed = False
-                banner_category = "blocking banner"
+                banner_category = "Blocking banner"
                 closing_score = score_close_button_from_html(data.banners_data[i]["html"])
                 data.category = banner_category
                 branch = "else: (if not tabbed)"
