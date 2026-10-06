@@ -47,13 +47,13 @@ ATTEMPTS = 1       # number of new try for finding banner
 ATTEMPT_STEP_SLEEP_TIME = 3      # time to wait before trying again
 CHOICE = 0     # interact_mode: 0. no interaction, 1. accept, 2. reject
 
-# urls_file = "blocking_banner.csv"
+urls_file = "tranco_56WKN_sample_250.csv"
 # urls_file = "blocking_banner_with_option_to_close.csv"
 # urls_file = "static_non_blocking_banner_stays_until_action.csv"
 # urls_file = "floating_non_blocking_banner_stays_until_action_close_option_given.csv"
 # urls_file = "floating_non_blocking_banner_stays_until_action.csv"
 # urls_file = "no_unknown_banner.csv"
-urls_file = "simple_non_blocking_banner.csv"
+# urls_file = "simple_non_blocking_banner.csv"
 # urls_file = "banners_sorted_exist.csv"
 # urls_file = "testing.csv"
 # urls_file = "testing_all_floating.csv"

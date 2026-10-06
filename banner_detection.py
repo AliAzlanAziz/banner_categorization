@@ -1161,8 +1161,14 @@ def detect_banner_category(data, i):
 
         try:
             # Step: Send Escape key to attempt to close any simple non-blocking banners
+            
+            driver.execute_script("""
+                document.body.setAttribute('tabindex', '-1');
+                document.body.focus();
+            """)
+            
             print("Sending Escape key to attempt to close any simple non-blocking banners")
-            ActionChains(driver).send_keys(Keys.ESCAPE).perform()
+            ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(1, 2.5)).perform()
             ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(1, 2.5)).perform()
             ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(1, 2.5)).perform()
             ActionChains(driver).send_keys(Keys.ESCAPE).pause(random.uniform(0.5, 1.5)).perform()
