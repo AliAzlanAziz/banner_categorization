@@ -12,13 +12,26 @@ df2 = pd.read_csv(base_path + "banner_detection.csv", header=None)
 
 results = []
 
+
+def norm_domain(value):
+    d = str(value).strip().lower()
+    for prefix in ("https://", "http://"):
+        if d.startswith(prefix):
+            d = d[len(prefix):]
+    if d.startswith("www."):
+        d = d[4:]
+    return d.rstrip("/")
+
+
+df2_domains = df2.iloc[:, 0].map(norm_domain)
+
 # ----------------------------
-# Matching logic (column 0)
+# Matching logic (column 0): exact domain match
 # ----------------------------
 for _, row1 in df1.iterrows():
     val1 = str(row1.iloc[0])
 
-    matches = df2[df2.iloc[:, 0].astype(str).str.contains(val1, na=False, regex=False)]
+    matches = df2[df2_domains == norm_domain(val1)]
 
     if not matches.empty:
         for _, row2 in matches.iterrows():

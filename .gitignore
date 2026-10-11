@@ -6,3 +6,6 @@ __pycache__
 .vscode
 /*.csv
 /*banner*.txt
+/thesis
+/tests
+/category_stats/*.csv

@@ -202,6 +202,39 @@ def pruning_els(els, strict=False):
     # del_links_els(els)
 
 
+CONSENT_TEXT_JS = """
+var re = /(privacy|consent|personal data|partners|vendors|trackers|tracking|legitimate interest|datenschutz|einwilligung|zustimm|donn\u00e9es personnelles|consentement|confidentialit|privacidad|consentimiento|riservatezza|consenso|privacidade|privacy policy)/ig;
+var best = null, bestLen = 0, hits = {}, all = document.body ? document.body.querySelectorAll('*') : [];
+for (var i = 0; i < all.length; i++) {
+    var e = all[i], t = '';
+    for (var n = e.firstChild; n; n = n.nextSibling) if (n.nodeType === 3) t += n.nodeValue;
+    t = t.replace(/\\s+/g, ' ').trim();
+    if (t.length < 20) continue;
+    var m = t.match(re);
+    if (!m) continue;
+    m.forEach(function (w) { hits[w.toLowerCase()] = 1; });
+    if (e.getClientRects().length && t.length > bestLen) { best = e; bestLen = t.length; }
+}
+return (Object.keys(hits).length >= 2 && bestLen >= 40) ? best : null;
+"""
+
+
+def is_large_frame(frame):
+    try:
+        size = frame.size
+        return size["width"] >= 250 and size["height"] >= 120
+    except Exception:
+        return False
+
+
+def consent_text_element(driver):
+    """longest consent/privacy text in the frame, or None"""
+    try:
+        return driver.execute_script(CONSENT_TEXT_JS)
+    except Exception:
+        return None
+
+
 def find_CMP_cookies_iframes(driver: WebDriver, lang='en'):
     frames_with_cookie = []
     iframes = driver.find_elements(By.TAG_NAME, "iframe")
@@ -221,6 +254,13 @@ def find_CMP_cookies_iframes(driver: WebDriver, lang='en'):
                 frames_with_cookie.append((frame, banner))
                 driver.switch_to.default_content()
                 break
+            consent_el = consent_text_element(driver) if is_large_frame(frame) else None
+            if consent_el is not None:
+                # consent iframe without the word cookie
+                banner = find_optimal(driver, (driver.find_element(By.TAG_NAME, "body"), consent_el), frame=True)
+                frames_with_cookie.append((frame, banner))
+                driver.switch_to.default_content()
+                break
             else:
                 child_iframes = driver.find_elements(By.TAG_NAME, "iframe")  # just one level checking {iframe in iframe}
                 for child_frame in child_iframes:
@@ -235,7 +275,11 @@ def find_CMP_cookies_iframes(driver: WebDriver, lang='en'):
             driver.switch_to.parent_frame()
         except (TimeoutException, WebDriverException) as ex:
             # print("failed to switch to frame" + " " + ex.__str__())
-            pass
+            # back to the top document
+            try:
+                driver.switch_to.default_content()
+            except WebDriverException:
+                pass
     driver.switch_to.default_content()
     return frames_with_cookie
 
@@ -309,34 +353,20 @@ def add_shadow_dom_to_body(driver):
 
 
 def get_shadowhost_children_list(driver):
-    all = driver.find_elements(By.XPATH, "/html/body/*")
-    all.extend(driver.find_elements(By.XPATH, "/html/body/*/*"))
-    host_children = []
-    count = 0
-    for el in all:
-        try:
-            shadow_root = el.shadow_root
-        except:
-            shadow_root = None
-        if (shadow_root):
-            realchild = []
-            children = el.shadow_root.find_elements(By.CSS_SELECTOR, "*")
-            first_child = None
-            for child in children:
-                if child.tag_name == "style":
-                    realchild.append(child)
-                if child.get_attribute("id") and first_child is None:
-                    first_child = child
-                    child_id = first_child.get_attribute("id")
-
-            if first_child:
-                realchild.append(first_child)
-                if child_id:
-                    siblings = el.shadow_root.find_elements(By.CSS_SELECTOR, "#" + child_id + " ~ *")
-                    realchild.extend(siblings)
-                    host_children.append([el, realchild])
-        count += 1
-    return host_children
+    """shadow hosts with consent text and the children of their shadow root"""
+    return driver.execute_script("""
+        // only hosts with consent text
+        var re = /cookie|consent|privacy|datenschutz|einwillig|partner|tracking|gdpr|rgpd|dsgvo|confidentialit|privacidad/i;
+        var out = [], all = document.querySelectorAll('*');
+        for (var i = 0; i < all.length && out.length < 10; i++) {
+            var root = all[i].shadowRoot;
+            if (!root || !root.children.length) continue;
+            var text = (root.textContent || '').replace(/\\s+/g, ' ').trim();
+            if (text.length < 30 || !re.test(text)) continue;
+            out.push([all[i], Array.prototype.slice.call(root.children)]);
+        }
+        return out;
+    """)
 
 
 def del_cloned_shadow_hosts(driver):

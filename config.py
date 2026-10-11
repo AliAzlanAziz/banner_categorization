@@ -6,6 +6,7 @@ COMPLETE_RUN = True     # perform the run for two stateless and stateful phase
 
 INTRACTABLE = True
 
+# headed by default; don't minimize firefox or lock the screen during a run (page stops scrolling)
 HEADLESS = False
 SLEEP_AFTER_INTERACTION = False         # enable to initiate the sleep after interaction (not after loading the page)
 WAITANYWAY = True
@@ -43,7 +44,7 @@ URL_MODE = 1     # prepending: 1. https, 2. http
 NUM_BROWSERS = 1               # number of browsers to run in parallel
 SLEEP_TIME = 60         # the amount of time waits after loading the website
 TEST_MODE_SLEEP = 0      # used for debugging
-ATTEMPTS = 1       # number of new try for finding banner
+ATTEMPTS = 2       # number of new try for finding banner
 ATTEMPT_STEP_SLEEP_TIME = 3      # time to wait before trying again
 CHOICE = 0     # interact_mode: 0. no interaction, 1. accept, 2. reject
 
@@ -60,15 +61,51 @@ urls_file = "tranco_56WKN_sample_250.csv"
 # urls_file = "no_banner.csv"
 # urls_file = "retest_wrong.csv"
 
+# run_crawl.py settings
+# files crawled by default
+URLS_FILES = [
+    "blocking_banner_with_option_to_close.csv",
+    "blocking_banner.csv",
+    "static_non_blocking_banner_stays_until_action.csv",
+    "floating_non_blocking_banner_stays_until_action_close_option_given.csv",
+    "floating_non_blocking_banner_stays_until_action.csv",
+    "simple_non_blocking_banner.csv",
+]
+NUM_WORKERS = 5              # parallel browsers
+SITE_TIMEOUT = 420           # seconds per site
+RETRY_FAILED = True          # retry timeouts and crashes once
+PAGE_LOAD_TIMEOUT = 45       # seconds
+POST_LOAD_WAIT = 8           # seconds after load
+WINDOW_SIZE = (1854, 1048)   # maximized size on my machine
+FIREFOX_BINARY = os.environ.get("FIREFOX_BINARY", "/snap/firefox/current/usr/lib/firefox/firefox")
+
 run_name = ""
 
-# directories path
-season_dir = "./" + urls_file.split(".")[0] + "-datadir/" + run_name + "/" # ./datadir/test-artifact/
-data_dir = season_dir + "1-Starting_Point_" + str(START_POINT) # ./datadir/test-artifact/1-Starting_Point_0/
-sc_dir = data_dir + "/banner_screenshots/" # ./datadir/test-artifact/1-Starting_Point_0/banner_screenshots/
-nobanner_sc_dir = sc_dir + "nobanner/" # ./datadir/test-artifact/1-Starting_Point_0/banner_screenshots/nobanner/
 
-log_file = data_dir + '/logs.txt' # ./datadir/test-artifact/1-Starting_Point_0/logs.txt
+def output_paths(input_name, start_point=START_POINT):
+    """Output locations for one input file (input_name as found in input-files/)."""
+    season = "./" + input_name.split(".")[0] + "-datadir/" + run_name + "/"
+    data = season + "1-Starting_Point_" + str(start_point)
+    return {
+        "season_dir": season,
+        "data_dir": data,
+        "sc_dir": data + "/banner_screenshots/",
+        "nobanner_sc_dir": data + "/banner_screenshots/nobanner/",
+        "log_file": data + "/logs.txt",
+        "results_dir": data + "/results/",
+        "site_logs_dir": data + "/site_logs/",
+        "output_csv": "./" + input_name,
+    }
+
+
+# directories path
+_paths = output_paths(urls_file)
+season_dir = _paths["season_dir"] # ./datadir/test-artifact/
+data_dir = _paths["data_dir"] # ./datadir/test-artifact/1-Starting_Point_0/
+sc_dir = _paths["sc_dir"] # ./datadir/test-artifact/1-Starting_Point_0/banner_screenshots/
+nobanner_sc_dir = _paths["nobanner_sc_dir"] # ./datadir/test-artifact/1-Starting_Point_0/banner_screenshots/nobanner/
+
+log_file = _paths["log_file"] # ./datadir/test-artifact/1-Starting_Point_0/logs.txt
 
 # initial values
 counter = 0
@@ -328,6 +365,10 @@ ANTI_BOT_SIGNATURES_MANUALLY_IDENTIFIED = {
     "Verify you are human",
     "This website uses a security service to protect against malicious bots.",
     "This page is displayed while the website verifies you are not a bot",
+    "confirm you are human",
+    "Complete the security check before continuing",
+    "are you a robot",
+    "I'm not a robot",
 }
 
 ANTI_BOT_SIGNATURES = {
